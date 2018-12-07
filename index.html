@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ROP Interactive</title>
+    <script src="anime.min.js"></script>
+    <script src="capstone-x86.min.js"></script>
+    <link rel="stylesheet" href="rop-interactive.css" />
+</head>
+<body>
+    <script>
+        var cpu = undefined;
+    </script>
+
+    <script type="module">
+        import {CPU} from './Models/CPU.js';
+
+        (function() {
+            cpu = new CPU(0x128);
+            cpu.loadCode([0x68, 0x00, 0x10, 0x00, 0x00]);
+        })();
+    </script>
+
+    <div id="box">
+
+    </div>
+</body>
+</html>
