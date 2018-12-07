@@ -21,4 +21,25 @@ export class Memory {
 
         return uint;
     }
+
+    loadUntil(offset, character) {
+        let retVal = [];
+
+        let subarray = this.memory.subarray(offset);
+
+        var stop = false;
+        subarray.forEach((value) => {
+            if (stop) {
+                return;
+            }
+
+            retVal.push(value);
+
+            if (value == character) {
+                stop = true;
+            }
+        });
+
+        return retVal;
+    }
 }

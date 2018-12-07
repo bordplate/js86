@@ -38,13 +38,17 @@ export class CPU {
 
         let instruction = this.disassembler.disasm(this.memory.load(instructionPointer, this.codeSize), instructionPointer, 0x1)[0];
 
-        let ih = new InstructionHandler(this, instruction.op_str);
+        let ih = new InstructionHandler(this, instruction.op_str, instruction.size);
 
         switch(instruction.mnemonic) {
             case "mov": ih.mov(); break;
             case "jmp": ih.jmp(); break;
             case "push": ih.push(); break;
             case "pop": ih.pop(); break;
+            case "call": ih.call(); break;
+            case "ret": ih.ret(); break;
+            case "int": ih.int(); break;
+            default: throw Error("Unknown mnemonic: " + instruction.mnemonic);
         }
 
         if (instructionPointer === this.registers.reg("RIP")) {
@@ -56,9 +60,10 @@ export class CPU {
 }
 
 class InstructionHandler {
-    constructor(cpu, op_str) {
+    constructor(cpu, op_str, inst_size = 0) {
         this.cpu = cpu;
         this.op_str = op_str;
+        this.inst_size = inst_size;
     }
 
     parseValue(val) {
@@ -128,12 +133,82 @@ class InstructionHandler {
         let rsp = this.cpu.registers.reg("rsp") - value.size;
         this.cpu.registers.setReg("rsp", rsp);
 
-        let memValue = value.value.toString(16).padStart(value.size * 2, "0").match(/.{1,2}/g);
+            let memValue = value.value.toString(16).padStart(value.size * 2, "0").match(/.{1,2}/g).map((val) => {
+                return parseInt(val, 16);
+            });
 
         this.cpu.memory.store(rsp, memValue);
     }
 
     pop() {
+        let register = this.op_str;
+        let size = this.cpu.registers.regByteLen(this.op_str);
 
+        let rsp = this.cpu.registers.reg("rsp");
+
+        let memValue = this.cpu.memory.loadUInt(rsp, size);
+
+        this.cpu.registers.setReg("rsp", rsp + size);
+        this.cpu.registers.setReg(register, memValue);
+    }
+
+    call() {
+        let newRip = this.cpu.registers.reg("rip") + this.inst_size;
+        this.cpu.registers.setReg("rip", newRip);
+
+        let ih = new InstructionHandler(this.cpu, "rip");
+        ih.push();
+
+        ih = new InstructionHandler(this.cpu, this.op_str);
+        ih.jmp();
+    }
+
+    ret() {
+        let ih = new InstructionHandler(this.cpu, "rip");
+        ih.pop();
+
+        ih = new InstructionHandler(this.cpu, this.cpu.registers.reg("rip"));
+        ih.jmp();
+    }
+
+    int() {
+        let value = this.parseValue(this.op_str);
+
+        let nativeFunction = new NativeFunction(this.cpu);
+
+        switch(value.value) {
+            case 1: nativeFunction.alert(); break;
+            case 2: nativeFunction.getInput(); break;
+            case 3: nativeFunction.exit(); break;
+        }
+    }
+}
+
+class NativeFunction {
+    constructor(cpu) {
+        this.cpu = cpu;
+    }
+
+    alert() {
+        let memoryPointer = this.cpu.registers.reg("rdi");
+
+        let messageArray = this.cpu.memory.loadUntil(memoryPointer, 0x00);
+
+        var message = "";
+        messageArray.forEach((byte) => {
+            message += String.fromCharCode(byte);
+        });
+
+        message = message.trim();
+
+        alert(message);
+    }
+
+    getInput() {
+
+    }
+
+    exit() {
+        console.log("Instruction end");
     }
 }

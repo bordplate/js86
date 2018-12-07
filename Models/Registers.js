@@ -10,7 +10,8 @@ export class Registers {
             new Register('RSI', 'ESI', 'SI', null, 'SIL'),
             new Register('RSP', 'ESP', 'SP', null, 'SPL'),
             new Register('RBP', 'EBP', 'BP', null, 'BPL'),
-            new Register('RIP', 'EIP', 'IP', null, null)
+            new Register('RIP', 'EIP', 'IP', null, null),
+            new Register('RDI', 'EDI', 'DI', null, null)
         ];
     }
 
