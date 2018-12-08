@@ -1,3 +1,7 @@
+/**
+ *  TODO: RWX protections for memory regions.
+ *  Don't know particularly how protections are implemented in real world though.
+ */
 export class Memory {
     constructor(size) {
         this.memory = new Uint8Array(size);

@@ -1,8 +1,16 @@
 import {Registers} from './Registers.js'
 import {Memory} from './Memory.js'
 
-
+/**
+ *  Small x86_64 emulator with a couple of registers implemented and
+ *      dynamically sized memory region.
+ */
 export class CPU {
+    /**
+     * Sets up the CPU, it's registers, memory, etc.
+     *
+     * @param memorySize Size of memory in bytes.
+     */
     constructor(memorySize) {
         this.registers = new Registers();
         this.memory = new Memory(memorySize);
@@ -11,19 +19,32 @@ export class CPU {
         this.registers.setReg("RIP", 0x0);
         this.registers.setReg("RSP", memorySize);
 
+        // Initializes the Capstone engine. Is used throughout the "CPU"
+        // It's just easier to emulate based on simple mnemonics rather than opcodes.
         this.disassembler = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
     }
 
+    /**
+     * Public API for loading code into memory.
+     *
+     * @param code Byte array of code.
+     */
     loadCode(code) {
         this.memory.store(0, code);
         this.codeSize = code.length;
     }
 
+    /**
+     * Returns full disassembled binary code.
+     *
+     * @returns {Array} Array of instructions (mnemonic and op str)
+     */
     fullDisassembledCode() {
         let instructions = this.disassembler.disasm(this.memory.load(0x0, this.codeSize), 0x1000);
 
         let disassembled = [];
 
+        // TODO: Could like flatMap or whatever? I use maps way too little :(
         instructions.forEach((instruction) => {
             disassembled.push([instruction.address.toString(16), instruction.mnemonic, instruction.op_str]);
         });
@@ -31,12 +52,17 @@ export class CPU {
         return disassembled;
     }
 
+    /**
+     * Steps through the code.
+     */
     nextInstruction() {
         let instructionPointer = this.registers.reg("RIP");
 
         // Disassemble one instruction off memory
-
-        let instruction = this.disassembler.disasm(this.memory.load(instructionPointer, this.codeSize), instructionPointer, 0x1)[0];
+        let instruction = this.disassembler.disasm(
+            this.memory.load(instructionPointer, this.codeSize),
+            instructionPointer, 0x1
+        )[0];
 
         let ih = new InstructionHandler(this, instruction.op_str, instruction.size);
 
@@ -51,6 +77,7 @@ export class CPU {
             default: throw Error("Unknown mnemonic: " + instruction.mnemonic);
         }
 
+        // Increase RIP only if RIP has not been changed by the instruction we just ran
         if (instructionPointer === this.registers.reg("RIP")) {
             instructionPointer += instruction.size;
             this.registers.setReg("rip", instructionPointer);
@@ -59,13 +86,27 @@ export class CPU {
 
 }
 
+/**
+ * Class for handling instructions.
+ * It's just way easier to split it into its own class,
+ *  so we don't have to deal with a bunch of dumb functions
+ *  in the CPU-class.
+ */
 class InstructionHandler {
     constructor(cpu, op_str, inst_size = 0) {
         this.cpu = cpu;
         this.op_str = op_str;
-        this.inst_size = inst_size;
+        this.inst_size = inst_size;  // Important for functions that control RIP
     }
 
+    /**
+     * Horribly badly parses (mostly right-side) instruction ops.
+     *
+     * Doesn't handle any arithmetic, cuz for a moment I forgot that was a thing.
+     *
+     * @param val Value to parse
+     * @returns {{size: number, value: (number)}} <-- That
+     */
     parseValue(val) {
         var value = 0x0;
         var valueSize = 0x0;
@@ -78,7 +119,9 @@ class InstructionHandler {
 
                 let sizeDefinition = components[0];
                 let ptr = components[1];
-                var address = components[2].replace("[", "").replace("]", "");
+                var address = components[2]
+                    .replace("[", "")
+                    .replace("]", "");
 
                 switch(sizeDefinition) {
                     case "qword": size = 0x8; break;
@@ -107,6 +150,9 @@ class InstructionHandler {
         return {"value": value, "size": valueSize};
     }
 
+    /**
+     * MOV-instruction. Works exactly like Intel specced it, I promise. /s
+     */
     mov() {
         let sides = this.op_str.split(",");
         let left = sides[0].trim();
@@ -121,25 +167,39 @@ class InstructionHandler {
         }
     }
 
+    /**
+     * JMPs to address
+     */
     jmp() {
         let address = this.parseValue(this.op_str);
 
         this.cpu.registers.setReg("RIP", address.value);
     }
 
+    /**
+     * Pushes
+     */
     push() {
         let value = this.parseValue(this.op_str);
 
         let rsp = this.cpu.registers.reg("rsp") - value.size;
         this.cpu.registers.setReg("rsp", rsp);
 
-            let memValue = value.value.toString(16).padStart(value.size * 2, "0").match(/.{1,2}/g).map((val) => {
+        let memValue = value.value.toString(16)
+            .padStart(value.size * 2, "0")
+            .match(/.{1,2}/g)
+            .map((val) => {
                 return parseInt(val, 16);
-            });
+            }
+        );
 
         this.cpu.memory.store(rsp, memValue);
     }
 
+    /**
+     * P0P P0P!
+     *  https://www.youtube.com/watch?v=dyp9Qw12boI
+     */
     pop() {
         let register = this.op_str;
         let size = this.cpu.registers.regByteLen(this.op_str);
@@ -152,6 +212,10 @@ class InstructionHandler {
         this.cpu.registers.setReg(register, memValue);
     }
 
+    /**
+     * Pushes and jumps like a rude kid. Damn it's annoying when kids are rude and parents are just
+     *  obviously ignoring it. grr.
+     */
     call() {
         let newRip = this.cpu.registers.reg("rip") + this.inst_size;
         this.cpu.registers.setReg("rip", newRip);
@@ -163,6 +227,9 @@ class InstructionHandler {
         ih.jmp();
     }
 
+    /**
+     * Pops and jumps like something that pops and jumps.
+     */
     ret() {
         let ih = new InstructionHandler(this.cpu, "rip");
         ih.pop();
@@ -171,6 +238,10 @@ class InstructionHandler {
         ih.jmp();
     }
 
+    /**
+     * Int-instructions are repurposed to call "native" JavaScript functions
+     * (Calling JavaScript functions "native" hurts my soul, but they're move native than an emulated CPU tbh)
+     */
     int() {
         let value = this.parseValue(this.op_str);
 
@@ -184,6 +255,9 @@ class InstructionHandler {
     }
 }
 
+/**
+ * JavaScript functions that we tie into the emulator.
+ */
 class NativeFunction {
     constructor(cpu) {
         this.cpu = cpu;
@@ -208,6 +282,7 @@ class NativeFunction {
 
     }
 
+    // TODO: Actually tear down CPU and stuff.
     exit() {
         console.log("Instruction end");
     }
