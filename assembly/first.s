@@ -1,23 +1,39 @@
 BITS 64
 
 main:
-    call    getalert
-    int     3
-
-getalert:
-    push    rbp
     mov     rbp, rsp
+    sub     rbp, 0x20       ; Allocate 0x20 bytes for stack variables
     mov     eax, msg
     mov     rdi, rax
     call    alert
-    mov     eax, sec
+    call    getname
+    mov     rax, rdi
+    mov     ebx, sec
+    mov     rdi, rbx
+    call    printf
+    int     3
+
+getname:
+    push    rbp
+    mov     rbp, rsp
+    sub     rbp, 0x20
+    mov     eax, ebp
+    mov     rsi, 0x200
     mov     rdi, rax
-    call    alert
+    call    input
     pop     rbp
     ret
 
 alert:
     int     1
+    ret
+
+input:
+    int     2
+    ret
+
+printf:
+    int     4
     ret
 
 wowhacked:
@@ -27,8 +43,8 @@ wowhacked:
     ret
 
 msg:
-    db "Hello, World!",0
+    db "Please type your name.",0
 sec:
-    db "Second message, just to test",0
+    db "Hello, %s, nice to meet you!",0
 hckd:
     db "Oh, you sly motherfucker, you hacked it",0

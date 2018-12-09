@@ -22,6 +22,8 @@ export class CPU {
         // Initializes the Capstone engine. Is used throughout the "CPU"
         // It's just easier to emulate based on simple mnemonics rather than opcodes.
         this.disassembler = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
+
+        this.done = false;
     }
 
     /**
@@ -64,6 +66,12 @@ export class CPU {
             instructionPointer, 0x1
         )[0];
 
+        if (instruction === undefined) {
+            throw new Error(`❌: Can not disassemble instruction at address ${instructionPointer}!`);
+        }
+
+        console.log(`📌 ${instruction.address.toString(16)}: ${instruction.mnemonic}\t${instruction.op_str}`);
+
         let ih = new InstructionHandler(this, instruction.op_str, instruction.size);
 
         switch(instruction.mnemonic) {
@@ -74,7 +82,8 @@ export class CPU {
             case "call": ih.call(); break;
             case "ret": ih.ret(); break;
             case "int": ih.int(); break;
-            default: throw Error("Unknown mnemonic: " + instruction.mnemonic);
+            case "sub": ih.sub(); break;
+            default: throw Error(`Unknown mnemonic: ${instruction.mnemonic}`);
         }
 
         // Increase RIP only if RIP has not been changed by the instruction we just ran
@@ -173,6 +182,10 @@ class InstructionHandler {
     jmp() {
         let address = this.parseValue(this.op_str);
 
+        if (address.value > this.cpu.memory.size) {
+            throw Error("Can not jump to address: " + address.value.toString(16));
+        }
+
         this.cpu.registers.setReg("RIP", address.value);
     }
 
@@ -208,8 +221,12 @@ class InstructionHandler {
 
         let memValue = this.cpu.memory.loadUInt(rsp, size);
 
+        if (memValue.toNumber() >= Infinity) {
+            throw Error(`💯: Can not pop 0x${memValue.toOctetString()} into ${register}. It is too large for this emulator to handle.`);
+        }
+
         this.cpu.registers.setReg("rsp", rsp + size);
-        this.cpu.registers.setReg(register, memValue);
+        this.cpu.registers.setReg(register, memValue.toNumber(false));
     }
 
     /**
@@ -225,6 +242,15 @@ class InstructionHandler {
 
         ih = new InstructionHandler(this.cpu, this.op_str);
         ih.jmp();
+    }
+
+    sub() {
+        let components = this.op_str.split(",");
+
+        let register = components[0];
+        let newValue = this.parseValue(register).value - this.parseValue(components[1]).value;
+
+        this.cpu.registers.setReg(register, newValue);
     }
 
     /**
@@ -251,6 +277,7 @@ class InstructionHandler {
             case 1: nativeFunction.alert(); break;
             case 2: nativeFunction.getInput(); break;
             case 3: nativeFunction.exit(); break;
+            case 4: nativeFunction.printf(); break;
         }
     }
 }
@@ -266,12 +293,7 @@ class NativeFunction {
     alert() {
         let memoryPointer = this.cpu.registers.reg("rdi");
 
-        let messageArray = this.cpu.memory.loadUntil(memoryPointer, 0x00);
-
-        var message = "";
-        messageArray.forEach((byte) => {
-            message += String.fromCharCode(byte);
-        });
+        let message = this.cpu.memory.loadString(memoryPointer, 0x00);
 
         message = message.trim();
 
@@ -279,11 +301,35 @@ class NativeFunction {
     }
 
     getInput() {
+        let memoryPointer = this.cpu.registers.reg("rdi");
+        let maxSize = this.cpu.registers.reg("rsi");
 
+        let input = prompt("");
+
+        if (input.length > maxSize) {
+            input = input.substr(0, maxSize);
+        }
+
+        let encoder = new TextEncoder('utf-8');
+        this.cpu.memory.store(memoryPointer, encoder.encode(input));
     }
 
     // TODO: Actually tear down CPU and stuff.
     exit() {
         console.log("Instruction end");
+        this.cpu.done = true;
+    }
+
+    /**
+     * lol, we're cheating like crazy here
+     */
+    printf() {
+        let formatPointer = this.cpu.registers.reg("rdi");
+        let argumentPointer = this.cpu.registers.reg("rax");
+
+        let format = this.cpu.memory.loadString(formatPointer, 0x00);
+        let argument = this.cpu.memory.loadString(argumentPointer, 0x00).trim();
+
+        alert(format.replace("%s", argument));
     }
 }
