@@ -133,6 +133,7 @@ body {
     text-align: center;
     font-size: 14px;
     font-weight: bold;
+    height: 16px;
 }
 
 .hex-byte {

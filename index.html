@@ -77,7 +77,7 @@
 
                     let stack = cpu.memory.load(rsp, cpu.memory.memory.length - rsp);
 
-                    var i = cpu.memory.memory.length;
+                    var i = rsp;
                     stack.forEach((byte) => {
                         document.getElementById('memory').innerHTML += `
                             <div class='byte'>
@@ -85,7 +85,7 @@
                                 <span class="ascii-byte">${String.fromCharCode(byte)}</span>
                                 <span class="hex-byte">${byte.toString(16)}</span>
                             </div>`;
-                        i -= 1;
+                        i += 1;
                     });
                 });
 
