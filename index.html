@@ -57,7 +57,7 @@
         var firstCPU = undefined;
 
         readyListeners.push(() => {
-            loadCPU('/binaries/first', (cpu) => {
+            loadCPU('binaries/first', (cpu) => {
                 firstCPU = cpu;
 
                 document.getElementById("assembly").innerHTML = firstCPU.fullDisassembledCode().flatMap((instruction) => {
@@ -123,22 +123,6 @@
             </div>
         </div>
         <div id="memory">
-            <div class="byte"><span class="mem-address">247</span><span class="ascii-byte">B</span><span class="hex-byte">42</span></div>
-            <div class="byte"><span class="mem-address">248</span><span class="ascii-byte">B</span><span class="hex-byte">42</span></div>
-            <div class="byte"><span class="mem-address">249</span><span class="ascii-byte">B</span><span class="hex-byte">42</span></div>
-            <div class="byte"><span class="mem-address">24A</span><span class="ascii-byte">B</span><span class="hex-byte">42</span></div>
-            <div class="byte"><span class="mem-address">24B</span><span class="ascii-byte">B</span><span class="hex-byte">42</span></div>
-            <div class="byte"><span class="mem-address">24C</span><span class="ascii-byte">B</span><span class="hex-byte">42</span></div>
-            <div class="byte"><span class="mem-address">24D</span><span class="ascii-byte">B</span><span class="hex-byte">42</span></div>
-            <div class="byte"><span class="mem-address">24E</span><span class="ascii-byte">B</span><span class="hex-byte">42</span></div>
-            <div class="byte"><span class="mem-address">24F</span><span class="ascii-byte">A</span><span class="hex-byte">41</span></div>
-            <div class="byte"><span class="mem-address">250</span><span class="ascii-byte">A</span><span class="hex-byte">41</span></div>
-            <div class="byte"><span class="mem-address">251</span><span class="ascii-byte">A</span><span class="hex-byte">41</span></div>
-            <div class="byte"><span class="mem-address">252</span><span class="ascii-byte">A</span><span class="hex-byte">41</span></div>
-            <div class="byte"><span class="mem-address">253</span><span class="ascii-byte">A</span><span class="hex-byte">41</span></div>
-            <div class="byte"><span class="mem-address">254</span><span class="ascii-byte">A</span><span class="hex-byte">41</span></div>
-            <div class="byte"><span class="mem-address">255</span><span class="ascii-byte">A</span><span class="hex-byte">41</span></div>
-            <div class="byte"><span class="mem-address">256</span><span class="ascii-byte">A</span><span class="hex-byte">41</span></div>
         </div>
     </div>
 </body>
