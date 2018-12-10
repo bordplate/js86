@@ -47,4 +47,4 @@ msg:
 sec:
     db "Hello, %s, nice to meet you!",0
 hckd:
-    db "Oh, you sly motherfucker, you hacked it",0
+    db "Good job: FLAG{123456765432AAA}",0

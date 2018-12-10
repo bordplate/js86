@@ -1,5 +1,163 @@
-#box {
+body {
+    font-family: sans-serif;
+}
+
+/** Code view **/
+
+#assembly {
+    float: left;
+    font-family: monospace;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    order: 3;
+    /*overflow-y: scroll;
+    height: 293px;*/
+}
+
+#assembly div:nth-child(2n) {
+    background-color: aliceblue;
+}
+
+.code-line {
+    display: flex;
+    min-height: 20px;
+    line-height: 20px;
+}
+
+.current-line {
+    background-color: rgba(141, 219, 144, 0.5) !important;
+}
+
+.address {
+    width: 32px;
+    margin-right: 4px;
+    border-width: 0;
+    border-style: solid;
+    border-right-width: 6px;
+    background-color: #ececec;
+    border-color: rgb(225, 225, 225);
+}
+
+.arrow {
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid rgba(141, 219, 144, 1);
+    margin-left: -10px;
+    display: none;
+}
+
+.current-line>.address {
+    background-color: rgba(141, 219, 144, 1) !important;
+}
+
+.current-line>.arrow {
+    display: block;
+}
+
+.mnemonic {
+    width: 50px;
+    font-weight: bold;
+    color: blue;
+}
+
+/** Registers **/
+
+#registers {
+    font-family: monospace;
+    font-size: 18px;
+    float: left;
+    margin-left: 10px;
+}
+
+.register {
+    margin-bottom: 10px;
+}
+
+.reg-name {
+    background-color: #575757;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    color: white;
+    padding: 2px;
+}
+
+.reg-value {
+    padding: 2px;
+    background-color: #b3d8e9;
+    border-bottom-right-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+/** Memory **/
+
+#memory {
+    display: flex;
+    flex-wrap: wrap;
+    font-family: monospace;
+    float: left;
+    width: 416px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.byte {
     height: 50px;
     width: 50px;
-    background-color: red;
+    margin-left: 2px;
+    margin-bottom: 2px;
+    background-color: #b3d8e9;
+}
+
+
+.byte:first-child {
+    border-top-left-radius: 5px;
+}
+
+.byte:nth-child(8) {
+   border-top-right-radius: 5px;
+}
+
+.byte:nth-last-child(8) {
+    border-bottom-left-radius: 5px;
+}
+
+.byte:last-child {
+    border-bottom-right-radius: 5px;
+}
+
+.ascii-byte {
+    font-family: sans-serif;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.hex-byte {
+    text-align: right;
+    margin-right: 2px;
+}
+
+.hex-byte::before {
+    content: "0x";
+    font-size: 10px;
+    color: #525252;
+}
+
+.mem-address::before {
+    content: "0x";
+    font-size: 10px;
+    color: #525252;
+}
+
+.mem-address {
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: white;
+}
+
+.byte span {
+    display: block;
 }

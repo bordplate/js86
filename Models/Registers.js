@@ -13,6 +13,18 @@ export class Registers {
             new Register('RIP', 'EIP', 'IP', null, null),
             new Register('RDI', 'EDI', 'DI', null, null)
         ];
+
+        this.subscribers = [];
+    }
+
+    subscribe(callback) {
+        this.subscribers.push(callback);
+    }
+
+    notify(reg, value) {
+        this.subscribers.forEach((callback) => {
+            callback(reg, value);
+        });
     }
 
     reg(name) {
@@ -37,6 +49,8 @@ export class Registers {
         this.registers.forEach((register) => {
             register.setReg(name, value);
         });
+
+        this.notify(name, value);
     }
 
     regByteLen(name) {

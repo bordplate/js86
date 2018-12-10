@@ -42,7 +42,7 @@ export class CPU {
      * @returns {Array} Array of instructions (mnemonic and op str)
      */
     fullDisassembledCode() {
-        let instructions = this.disassembler.disasm(this.memory.load(0x0, this.codeSize), 0x1000);
+        let instructions = this.disassembler.disasm(this.memory.load(0x0, this.codeSize), 0x0);
 
         let disassembled = [];
 

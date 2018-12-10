@@ -9,10 +9,27 @@ export class OutOfBoundsLoad extends Error {}
 export class Memory {
     constructor(size) {
         this.memory = new Uint8Array(size);
+        this.subscribers = [];
+    }
+
+    /**
+     * Subscribe to changes in memory
+     */
+    subscribe(callback) {
+        this.subscribers.push(callback);
+    }
+
+    notify() {
+        this.subscribers.forEach((subscriber) => {
+            subscriber();
+        });
     }
 
     store(offset, data) {
         this.memory.set(data, offset);
+
+        // Notify subscribers that memory has changed.
+        this.notify();
     }
 
     load(offset, size) {
