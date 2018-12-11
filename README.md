@@ -26,4 +26,5 @@ Custom attributes:
 # Third-party frameworks and code
 [Capstone](http://www.capstone-engine.org)  
 [Capstone.js](https://github.com/AlexAltea/capstone.js) by [Alexandro Sanchez](https://github.com/AlexAltea)  
-[node-int64](https://github.com/broofa/node-int64) by [Robert Kieffer](https://github.com/broofa)  
+[node-int64](https://github.com/broofa/node-int64) by [Robert Kieffer](https://github.com/broofa)
+[Pretty CSS buttons](https://codepen.io/derekmorash/) by Derek Morash  

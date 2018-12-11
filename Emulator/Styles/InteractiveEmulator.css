@@ -1,11 +1,77 @@
-body {
-    font-family: sans-serif;
-}
-
 cpu-emulator {
-    width: 600px;
+    width: 800px;
     display: block;
 }
+
+/** Buttons **/
+.button-container {
+    margin-bottom: 10px;
+}
+
+.button-container > button {
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border: 2px solid #e74c3c;
+    border-radius: 0.6em;
+    color: #e74c3c;
+    cursor: pointer;
+    align-self: center;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1;
+    padding: 0.2em 0.8em;
+    text-decoration: none;
+    text-align: center;
+    text-transform: uppercase;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    border-radius: 3em;
+    border-color: #2ecc71;
+    color: #2ecc71;
+    background-image: linear-gradient(to bottom, transparent 50%, #2ecc71 50%);
+    background-position: 0% 0%;
+    background-size: 210%;
+    transition: background 150ms ease-in-out, color 150ms ease-in-out;
+}
+
+.active-running {
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border: 2px solid #e74c3c;
+    border-radius: 0.6em;
+    color: #e74c3c;
+    cursor: pointer;
+    align-self: center;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1;
+    padding: 0.2em 0.8em;
+    text-decoration: none;
+    text-align: center;
+    text-transform: uppercase;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    border-radius: 3em;
+    border-color: #2ecc71;
+    color: white !important;
+    background-image: linear-gradient(to bottom, transparent 0%, #2ecc71 0%) !important;
+    background-position: 0% 0%;
+    background-size: 210%;
+    transition: background 150ms ease-in-out, color 150ms ease-in-out;
+}
+
+.button-container > button:hover {
+    color: #fff;
+    background-position: 0 100%;
+}
+
+
 
 /** Code view **/
 
@@ -71,16 +137,19 @@ cpu-assembly div:nth-child(2n) {
 /** Registers **/
 
 cpu-registers {
-    display: block;
+    display: grid;
+    grid-template-columns: auto auto auto;
     font-family: monospace;
     font-size: 18px;
     float: left;
     margin-left: 10px;
+    margin-bottom: 10px;
+    width: 400px;
 }
 
 cpu-register {
-    display: block;
-    margin-bottom: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
 }
 
 .reg-name {
@@ -107,7 +176,7 @@ cpu-memory {
     float: left;
     width: 416px;
     border-radius: 5px;
-    margin-top: 10px;
+    margin-left: 10px;
 }
 
 .byte {

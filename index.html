@@ -7,14 +7,13 @@
     <script src="Emulator/capstone-x86.min.js"></script>
     <link rel="stylesheet" href="Emulator/Styles/InteractiveEmulator.css" />
 </head>
-<body>
-    <cpu-emulator style="width: 900px;"
+<body style="display:grid;">
+    <cpu-emulator
             cpu-binary="binaries/first"
             memory-size="0x256"
             stack-watch="0x226"
             run-speed="500"
-            watched-registers="rip,rsp">
-
+            watched-registers="rip,rsp,rax,rbp">
     </cpu-emulator>
 </body>
 </html>

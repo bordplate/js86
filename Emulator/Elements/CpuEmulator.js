@@ -4,6 +4,8 @@ export class CpuEmulator extends HTMLElement {
     constructor() {
         super();
 
+        this.isRunning = false;
+
         // Load attributes
         this.binaryPath = this.attributes['cpu-binary'].value;
         this.memorySize = this.attributes['memory-size'] ? parseInt(this.attributes['memory-size'].value) : 0x256;
@@ -12,19 +14,6 @@ export class CpuEmulator extends HTMLElement {
             this.attributes['watched-registers'].value.split(',')
             : [];
         this.runSpeed = this.attributes['run-speed'] ? parseInt(this.attributes['run-speed'].value) : 500;
-
-        // Create subview, append and modify
-        this.assemblyView = document.createElement('cpu-assembly');
-        this.registersView = document.createElement('cpu-registers');
-        this.memoryView = document.createElement('cpu-memory');
-        this.consoleView = document.createElement('emulator-console');
-
-        this.appendChild(this.assemblyView);
-        this.appendChild(this.registersView);
-        this.appendChild(this.memoryView);
-        this.appendChild(this.consoleView);
-
-        this.consoleView.load(); // Nodes can't have children before they're added to DOM for some reason.
 
         this.stepButton = document.createElement('button');
         this.stepButton.innerText = "Step";
@@ -38,9 +27,26 @@ export class CpuEmulator extends HTMLElement {
         this.resetButton.innerText = "Reset";
         {const veryMuchThis = this; this.resetButton.onclick = () => {veryMuchThis.resetCPU()};}
 
-        this.appendChild(this.stepButton);
-        this.appendChild(this.runButton);
-        this.appendChild(this.resetButton);
+        this.buttonContainer = document.createElement("div");
+        this.buttonContainer.className = "button-container";
+        this.appendChild(this.buttonContainer);
+
+        this.buttonContainer.appendChild(this.stepButton);
+        this.buttonContainer.appendChild(this.runButton);
+        this.buttonContainer.appendChild(this.resetButton);
+
+        // Create subview, append and modify
+        this.assemblyView = document.createElement('cpu-assembly');
+        this.registersView = document.createElement('cpu-registers');
+        this.memoryView = document.createElement('cpu-memory');
+        this.consoleView = document.createElement('emulator-console');
+
+        this.appendChild(this.assemblyView);
+        this.appendChild(this.consoleView);
+        this.appendChild(this.registersView);
+        this.appendChild(this.memoryView);
+
+        this.consoleView.load(); // Nodes can't have children before they're added to DOM for some reason.
 
         this.watchedRegisters.forEach((register) => {
             this.registersView.addRegisterView(register);
@@ -101,8 +107,20 @@ export class CpuEmulator extends HTMLElement {
     }
 
     runCPU() {
-        var veryMuchThis = this;
-        this.runInterval = setInterval(() => {veryMuchThis.stepCPU()}, this.runSpeed);
+        if(!this.isRunning) {
+            this.runButton.className += "active-running";
+            this.runButton.innerText = "Stop";
+            var veryMuchThis = this;
+            this.isRunning = true;
+            this.runInterval = setInterval(() => {
+                veryMuchThis.stepCPU()
+            }, this.runSpeed);
+        } else {
+            this.isRunning = false;
+            clearInterval(this.runInterval);
+            this.runButton.className = "";
+            this.runButton.innerText = "Run";
+        }
     }
 
     stepCPU() {
@@ -110,6 +128,7 @@ export class CpuEmulator extends HTMLElement {
     }
 
     resetCPU() {
+        this.runButton.className = "";
         clearInterval(this.runInterval);
         this.consoleView.clear();
 
