@@ -45,6 +45,10 @@ export class Console extends HTMLElement {
         })
     }
 
+    clear() {
+        this.textArea.value = "";
+    }
+
     load() {
         this.appendChild(this.textArea);
     }
