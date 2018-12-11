@@ -61,6 +61,10 @@ export class CPU {
      * Steps through the code.
      */
     nextInstruction() {
+        if (this.done === true) {
+            return;
+        }
+
         this.doNotProgress = false;
 
         let instructionPointer = this.registers.reg("RIP");
@@ -94,7 +98,7 @@ export class CPU {
         }
 
         // Increase RIP only if RIP has not been changed by the instruction we just ran
-        if (instructionPointer === this.registers.reg("RIP") && this.doNotProgress === false) {
+        if (instructionPointer === this.registers.reg("RIP") && this.doNotProgress === false && !this.done) {
             instructionPointer += instruction.size;
             this.registers.setReg("rip", instructionPointer);
         }
@@ -329,6 +333,7 @@ class NativeFunction {
     // TODO: Actually tear down CPU and stuff.
     exit() {
         console.log("Instruction end");
+        this.cpu.ioBuffer.output("Finished running program.");
         this.cpu.done = true;
     }
 

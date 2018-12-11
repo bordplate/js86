@@ -45,6 +45,6 @@ wowhacked:
 msg:
     db "Please type your name:",0x0a,0
 sec:
-    db "Hello, %s, nice to meet you!",0
+    db "Hello, %s, nice to meet you!",0x0a,0
 hckd:
     db "Good job: FLAG{123456765432AAA}",0
