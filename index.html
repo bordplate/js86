@@ -3,127 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>ROP Interactive</title>
-    <script src="anime.min.js"></script>
+    <script src="cpu-load-module.js" type="module"></script>
     <script src="capstone-x86.min.js"></script>
     <link rel="stylesheet" href="rop-interactive.css" />
 </head>
 <body>
-    <script>
-        var loadCPU = null;
-
-        let readyListeners = [() => {}];
-        var ready = () => {readyListeners.forEach((listener) => {listener();})};
-    </script>
-
-    <script type="module">
-        import {CPU} from './Models/CPU.js';
-
-        (function() {
-            loadCPU = (binary, callback) => {
-                var oReq = new XMLHttpRequest();
-                oReq.open("GET", binary, true);
-                oReq.responseType = "arraybuffer";
-
-                oReq.onload = function (oEvent) {
-                    var arrayBuffer = oReq.response; // Note: not oReq.responseText
-                    if (arrayBuffer) {
-                        var byteArray = new Uint8Array(arrayBuffer);
-
-                        let hexDump = "";
-                        byteArray.forEach((byte) => {
-                            hexDump += byte.toString(16).padStart(2, "0") + " ";
-                        });
-
-                        console.log("Loading code: ");
-                        console.log(hexDump);
-
-                        let cpu = new CPU(0x256);
-                        cpu.loadCode(byteArray);
-
-                        console.log("Loaded CPU. Disassembly: \n" + cpu.fullDisassembledCode().join("\n"));
-
-                        callback(cpu);
-                    }
-                };
-
-                oReq.send(null);
-            };
-
-            ready();
-        })();
-    </script>
-
-    <script defer>
-        var firstCPU = undefined;
-
-        readyListeners.push(() => {
-            loadCPU('binaries/first', (cpu) => {
-                firstCPU = cpu;
-
-                document.getElementById("assembly").innerHTML = firstCPU.fullDisassembledCode().flatMap((instruction) => {
-                    return `
-                        <div class="code-line" id="line-0x${instruction[0]}">
-                            <span class="address">0x${instruction[0].toUpperCase().padStart(2, "0")}</span>
-                            <span class="arrow"></span>
-                            <span class="mnemonic">${instruction[1]}</span>&#9;&#9;
-                            <span class="op_str">${instruction[2]}</span>
-                        </div>`
-                }).join('\n');
-
-                cpu.memory.subscribe(() => {
-                    document.getElementById("memory").innerHTML = "";
-
-                    let rsp = 0x226; //cpu.registers.reg("rsp");
-
-                    let stack = cpu.memory.load(rsp, cpu.memory.memory.length - rsp);
-
-                    var i = rsp;
-                    stack.forEach((byte) => {
-                        document.getElementById('memory').innerHTML += `
-                            <div class='byte'>
-                                <span class="mem-address">${i.toString(16)}</span>
-                                <span class="ascii-byte">${String.fromCharCode(byte)}</span>
-                                <span class="hex-byte">${byte.toString(16)}</span>
-                            </div>`;
-                        i += 1;
-                    });
-                });
-
-                let observedRegs = ["rip", "rsp"];
-                cpu.registers.subscribe((reg, value) => {
-                    if (observedRegs.includes(reg.toLowerCase())) {
-                        let hexedValue = `0x${value.toString(16).toUpperCase()}`;
-
-                        if (reg.toLowerCase() === "rip") {
-                            var allLines = document.getElementsByClassName('code-line');
-
-                            Array.prototype.forEach.call(allLines, function (element) {
-                                element.className = "code-line";
-                            });
-
-                            document.getElementById(`line-${hexedValue.toLowerCase()}`).className = "code-line current-line";
-                        }
-                        document.getElementById(`reg-${reg.toLowerCase()}`).innerText = `0x${value.toString(16).padStart(8, "0").toUpperCase()}`;
-                    }
-                });
-            });
-        });
-    </script>
-
-    <button onclick="firstCPU ? firstCPU.nextInstruction() : console.log('Hold up, is not loaded just yet');">Step</button>
-    <div style="width:500px;">
-        <div id="assembly">
-        </div>
-        <div id="registers">
-            <div class="register">
-                <span class="reg-name">RIP</span><span class="reg-value" id="reg-rip">0x00000000</span>
-            </div><br>
-            <div class="register">
-                <span class="reg-name">RSP</span><span class="reg-value" id="reg-rsp">0x00000256</span>
-            </div>
-        </div>
-        <div id="memory">
-        </div>
-    </div>
+    <cpu-emulator
+            cpu-binary="binaries/first"
+            memory-size="0x256"
+            stack-watch="0x226"
+            watched-registers="rip,rsp">
+    </cpu-emulator>
 </body>
 </html>

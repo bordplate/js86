@@ -2,9 +2,13 @@ body {
     font-family: sans-serif;
 }
 
+cpu-emulator {
+    width: 500px;
+}
+
 /** Code view **/
 
-#assembly {
+cpu-assembly {
     float: left;
     font-family: monospace;
     width: 300px;
@@ -15,7 +19,7 @@ body {
     height: 293px;*/
 }
 
-#assembly div:nth-child(2n) {
+cpu-assembly div:nth-child(2n) {
     background-color: aliceblue;
 }
 
@@ -65,14 +69,14 @@ body {
 
 /** Registers **/
 
-#registers {
+cpu-registers {
     font-family: monospace;
     font-size: 18px;
     float: left;
     margin-left: 10px;
 }
 
-.register {
+cpu-register {
     margin-bottom: 10px;
 }
 
@@ -93,7 +97,7 @@ body {
 
 /** Memory **/
 
-#memory {
+cpu-memory {
     display: flex;
     flex-wrap: wrap;
     font-family: monospace;

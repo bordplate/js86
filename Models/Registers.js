@@ -27,6 +27,14 @@ export class Registers {
         });
     }
 
+    notifyAll() {
+        this.subscribers.forEach((callback) => {
+            this.registers.forEach((register) => {
+                callback(register.name64, register.value);
+            });
+        });
+    }
+
     reg(name) {
         var retVal = undefined;
 
