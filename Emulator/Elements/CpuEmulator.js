@@ -16,10 +16,14 @@ export class CpuEmulator extends HTMLElement {
         this.assemblyView = document.createElement('cpu-assembly');
         this.registersView = document.createElement('cpu-registers');
         this.memoryView = document.createElement('cpu-memory');
+        this.consoleView = document.createElement('emulator-console');
 
         this.appendChild(this.assemblyView);
         this.appendChild(this.registersView);
         this.appendChild(this.memoryView);
+        this.appendChild(this.consoleView);
+
+        this.consoleView.load(); // Nodes can't have children before they're added to DOM for some reason.
 
         this.stepButton = document.createElement('button');
         this.stepButton.innerText = "Step";
@@ -53,6 +57,8 @@ export class CpuEmulator extends HTMLElement {
     }
 
     onCPULoad() {
+        this.consoleView.setIOBuffer(this.cpu.ioBuffer);
+
         this.assemblyView.loadAssembly(this.cpu.fullDisassembledCode());
 
         // Subscribe to memory changes

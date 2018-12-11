@@ -43,7 +43,7 @@ wowhacked:
     ret
 
 msg:
-    db "Please type your name.",0
+    db "Please type your name:",0x0a,0
 sec:
     db "Hello, %s, nice to meet you!",0
 hckd:

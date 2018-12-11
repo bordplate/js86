@@ -1,5 +1,6 @@
 import {Registers} from './Registers.js'
 import {Memory} from './Memory.js'
+import {IOBuffer} from './IOBuffer.js';
 
 /**
  *  Small x86_64 emulator with a couple of registers implemented and
@@ -24,6 +25,8 @@ export class CPU {
         this.disassembler = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
 
         this.done = false;
+
+        this.ioBuffer = new IOBuffer();
     }
 
     /**
@@ -58,6 +61,8 @@ export class CPU {
      * Steps through the code.
      */
     nextInstruction() {
+        this.doNotProgress = false;
+
         let instructionPointer = this.registers.reg("RIP");
 
         // Disassemble one instruction off memory
@@ -67,10 +72,12 @@ export class CPU {
         )[0];
 
         if (instruction === undefined) {
-            throw new Error(`❌: Can not disassemble instruction at address ${instructionPointer}!`);
+            throw new Error(`Can not disassemble instruction at address ${instructionPointer}!`);
         }
 
-        console.log(`📌 ${instruction.address.toString(16)}: ${instruction.mnemonic}\t${instruction.op_str}`);
+        if (this.trackInstructions !== undefined) {
+            console.log(`📌 ${instruction.address.toString(16)}: ${instruction.mnemonic}\t${instruction.op_str}`);
+        }
 
         let ih = new InstructionHandler(this, instruction.op_str, instruction.size);
 
@@ -87,7 +94,7 @@ export class CPU {
         }
 
         // Increase RIP only if RIP has not been changed by the instruction we just ran
-        if (instructionPointer === this.registers.reg("RIP")) {
+        if (instructionPointer === this.registers.reg("RIP") && this.doNotProgress === false) {
             instructionPointer += instruction.size;
             this.registers.setReg("rip", instructionPointer);
         }
@@ -295,16 +302,21 @@ class NativeFunction {
 
         let message = this.cpu.memory.loadString(memoryPointer, 0x00);
 
-        message = message.trim();
+        message = message.substring(0, message.length);
 
-        alert(message);
+        this.cpu.ioBuffer.output(message);
     }
 
     getInput() {
         let memoryPointer = this.cpu.registers.reg("rdi");
         let maxSize = this.cpu.registers.reg("rsi");
 
-        let input = prompt("");
+        let input = this.cpu.ioBuffer.getNextInput();
+
+        if (input === false) {
+            this.cpu.doNotProgress = true;
+            return;
+        }
 
         if (input.length > maxSize) {
             input = input.substr(0, maxSize);
@@ -330,6 +342,6 @@ class NativeFunction {
         let format = this.cpu.memory.loadString(formatPointer, 0x00);
         let argument = this.cpu.memory.loadString(argumentPointer, 0x00).trim();
 
-        alert(format.replace("%s", argument));
+        this.cpu.ioBuffer.output(format.replace("%s", argument));
     }
 }

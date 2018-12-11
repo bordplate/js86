@@ -3,7 +3,8 @@ body {
 }
 
 cpu-emulator {
-    width: 500px;
+    width: 600px;
+    display: block;
 }
 
 /** Code view **/
@@ -70,6 +71,7 @@ cpu-assembly div:nth-child(2n) {
 /** Registers **/
 
 cpu-registers {
+    display: block;
     font-family: monospace;
     font-size: 18px;
     float: left;
@@ -77,6 +79,7 @@ cpu-registers {
 }
 
 cpu-register {
+    display: block;
     margin-bottom: 10px;
 }
 
@@ -166,3 +169,25 @@ cpu-memory {
 .byte span {
     display: block;
 }
+
+/** Console **/
+
+emulator-console {
+    display: flex;
+    position: relative;
+    background-color: black;
+    color: white;
+    font-family: monospace;
+    font-size: 18px;
+    width: 500px;
+    height: 200px;
+}
+
+.console-window {
+    font-size: 14px;
+    border: 0;
+    resize: none;
+    box-shadow: none;
+}
+
+textarea { outline: none; }
