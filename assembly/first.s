@@ -47,4 +47,4 @@ msg:
 sec:
     db "Hello, %s, nice to meet you!",0x0a,0
 hckd:
-    db "Good job: FLAG{123456765432AAA}",0
+    db "Good job: FLAG{123456765432AAA}",0x0a,0
