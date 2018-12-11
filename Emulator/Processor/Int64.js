@@ -3,6 +3,8 @@
 //     Copyright (c) 2012 Robert Kieffer
 //     MIT License - http://opensource.org/licenses/mit-license.php
 
+import {CPUError} from "./CPU.js";
+
 /**
  * Support for handling 64-bit int numbers in Javascript (node.js)
  *
@@ -126,7 +128,7 @@ export class Int64 {
                 hi = parseInt(hi, 16);
                 lo = parseInt(lo, 16);
             } else {
-                throw new Error(hi + ' must be a Number or String');
+                throw new CPUError(hi + ' must be a Number or String');
             }
         }
 

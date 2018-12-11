@@ -1,4 +1,5 @@
 import {Register} from './Register.js'
+import {CPUError} from "./CPU.js";
 
 export class Registers {
     constructor() {
@@ -47,7 +48,7 @@ export class Registers {
         });
 
         if (retVal === undefined) {
-            throw Error("Tried to access nonexistent register: " + name);
+            throw CPUError("Tried to access nonexistent register: " + name);
         }
 
         return retVal;
@@ -73,7 +74,7 @@ export class Registers {
         });
 
         if (retVal === undefined) {
-            throw Error("Tried to access nonexistent register: " + name);
+            throw CPUError("Tried to access nonexistent register: " + name);
         }
 
         return retVal;

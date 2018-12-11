@@ -2,6 +2,8 @@ import {Registers} from './Registers.js'
 import {Memory} from './Memory.js'
 import {IOBuffer} from './IOBuffer.js';
 
+export class CPUError extends Error {}
+
 /**
  *  Small x86_64 emulator with a couple of registers implemented and
  *      dynamically sized memory region.
@@ -27,6 +29,16 @@ export class CPU {
         this.done = false;
 
         this.ioBuffer = new IOBuffer();
+
+        window.onerror = (msg, url, lineNo, columnNo, error) => {
+
+            if (error instanceof CPUError) {
+                this.done = true;
+                this.ioBuffer.output(msg + "\n");
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -76,7 +88,7 @@ export class CPU {
         )[0];
 
         if (instruction === undefined) {
-            throw new Error(`Can not disassemble instruction at address ${instructionPointer}!`);
+            throw new CPUError(`Can not disassemble instruction at address ${instructionPointer}!`);
         }
 
         if (this.trackInstructions !== undefined) {
@@ -94,7 +106,7 @@ export class CPU {
             case "ret": ih.ret(); break;
             case "int": ih.int(); break;
             case "sub": ih.sub(); break;
-            default: throw Error(`Unknown mnemonic: ${instruction.mnemonic}`);
+            default: throw CPUError(`Unknown mnemonic: ${instruction.mnemonic}`);
         }
 
         // Increase RIP only if RIP has not been changed by the instruction we just ran
@@ -194,7 +206,7 @@ class InstructionHandler {
         let address = this.parseValue(this.op_str);
 
         if (address.value > this.cpu.memory.size) {
-            throw Error("Can not jump to address: " + address.value.toString(16));
+            throw CPUError("Can not jump to address: " + address.value.toString(16));
         }
 
         this.cpu.registers.setReg("RIP", address.value);
@@ -233,7 +245,7 @@ class InstructionHandler {
         let memValue = this.cpu.memory.loadUInt(rsp, size);
 
         if (memValue.toNumber() >= Infinity) {
-            throw Error(`💯: Can not pop 0x${memValue.toOctetString()} into ${register}. It is too large for this emulator to handle.`);
+            throw CPUError(`Can not pop 0x${memValue.toOctetString()} into ${register}. It is too large for this emulator to handle.`);
         }
 
         this.cpu.registers.setReg("rsp", rsp + size);

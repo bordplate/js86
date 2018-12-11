@@ -1,3 +1,5 @@
+import {CPUError} from "./CPU.js";
+
 export const SUB_TYPE = {
     INPUT: 1,
     OUTPUT: 2
@@ -11,19 +13,11 @@ export class IOBuffer {
 
         this.inputSubscribers = [];
         this.outputSubscribers = [];
-
-        // Capturing thrown errors
-        // TODO: Only catch CPU errors, this probably catches browser crap as well?
-        window.onerror = (msg, url, lineNo, columnNo, error) => {
-            this.output(msg + "\n");
-
-            return false;
-        }
     }
 
     subscribe(type, callback) {
         if (type !== 1 && type !== 2) {
-            throw Error("Must subscribe to either INPUT or OUTPUT type.");
+            throw CPUError("Must subscribe to either INPUT or OUTPUT type.");
         }
 
         switch (type) {

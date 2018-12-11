@@ -158,7 +158,7 @@ export class CpuEmulator extends HTMLElement {
         request.onload = (event) => {
             const binary = request.response;
             if (!binary) {
-                throw Error(`Could not load binary from path: ${binaryPath}`);
+                throw CPUError(`Could not load binary from path: ${binaryPath}`);
             }
 
             callback(new Uint8Array(binary));

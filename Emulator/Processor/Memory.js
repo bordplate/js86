@@ -1,4 +1,5 @@
 import {Int64} from './Int64.js'
+import {CPUError} from "./CPU.js";
 
 export class OutOfBoundsLoad extends Error {}
 
@@ -34,7 +35,7 @@ export class Memory {
 
     load(offset, size) {
         if ((offset + size) > this.memory.length) {
-            throw new OutOfBoundsLoad(`❌: Can not load memory at address ${(offset+size).toString(16)}. Memory out of bounds.`);
+            throw new CPUError(`Can not load memory at address ${(offset+size).toString(16)}. Memory out of bounds.`);
         }
 
         return this.memory.subarray(offset, offset + size);
