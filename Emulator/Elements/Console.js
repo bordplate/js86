@@ -26,13 +26,21 @@ export class Console extends HTMLElement {
                 }
             };
 
+            this.textArea.onkeyup = (e) => {
+                veryMuchThis.textArea.setSelectionRange(veryMuchThis.textArea.value.length, veryMuchThis.textArea.value.length);
+            };
+
             this.textArea.onkeypress = (e) => {
                 if (e.key === "Enter") {
                     let buffer = veryMuchThis.ioBuffer.buffer;
                     let input = veryMuchThis.textArea.value.substring(buffer.length) + "\n";
                     veryMuchThis.ioBuffer.input(input);
                 }
-            }
+            };
+
+            this.textArea.onmouseup = (e) => {
+                veryMuchThis.textArea.setSelectionRange(veryMuchThis.textArea.value.length, veryMuchThis.textArea.value.length);
+            };
         }
     }
 
