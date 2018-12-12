@@ -26,14 +26,14 @@ cpu-emulator {
     text-decoration: none;
     text-align: center;
     text-transform: uppercase;
-    font-family: "Montserrat", sans-serif;
+    font-family: sans-serif;
     font-weight: 700;
     border-radius: 3em;
     border-color: #2ecc71;
     color: #2ecc71;
     background-image: linear-gradient(to bottom, transparent 50%, #2ecc71 50%);
-    background-position: 0% 0%;
-    background-size: 210%;
+    background-position: 0 0;
+    background-size: 210% 3em;
     transition: background 150ms ease-in-out, color 150ms ease-in-out;
 }
 
@@ -55,7 +55,7 @@ cpu-emulator {
     text-decoration: none;
     text-align: center;
     text-transform: uppercase;
-    font-family: "Montserrat", sans-serif;
+    font-family: sans-serif;
     font-weight: 700;
     border-radius: 3em;
     border-color: #2ecc71;
