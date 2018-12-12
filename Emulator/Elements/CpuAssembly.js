@@ -16,12 +16,13 @@ export class CpuAssembly extends HTMLElement {
         });
 
         document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`).className = "code-line current-line";
+        //document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`).setAttribute('aria-live', 'polite');
     }
 
     loadAssembly(assembly) {
         this.innerHTML = assembly.flatMap((instruction) => {
             return `
-                        <div class="code-line" id="${this.uniqueName}-line-0x${instruction[0]}">
+                        <div tabindex="-30" role="row" class="code-line" id="${this.uniqueName}-line-0x${instruction[0]}">
                             <span class="address">0x${instruction[0].toUpperCase().padStart(2, "0")}</span>
                             <span class="arrow"></span>
                             <span class="mnemonic">${instruction[1]}</span>&#9;&#9;

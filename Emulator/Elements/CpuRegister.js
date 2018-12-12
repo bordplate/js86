@@ -18,6 +18,8 @@ export class CpuRegister extends HTMLElement {
     }
 
     updateValue(value) {
+        this.setAttribute('aria-label', `${this.name} hex ${value.toString(16)}`);
+        this.registerValueView.setAttribute('aria-label', `Hex ${value.toString(16)}`);
         this.registerValueView.innerText = `0x${value.toString(16).padStart(8, "0")}`;
     }
 }

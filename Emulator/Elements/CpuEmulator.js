@@ -46,6 +46,8 @@ export class CpuEmulator extends HTMLElement {
         this.appendChild(this.registersView);
         this.appendChild(this.memoryView);
 
+        this.configureAccessibility();
+
         this.consoleView.load(); // Nodes can't have children before they're added to DOM for some reason.
 
         this.watchedRegisters.forEach((register) => {
@@ -71,6 +73,17 @@ export class CpuEmulator extends HTMLElement {
 
             this.onCPULoad();
         });
+    }
+
+    configureAccessibility() {
+        this.assemblyView.setAttribute('tabindex', '-1');
+        this.consoleView.setAttribute('tabindex', '-2');
+        this.registersView.setAttribute('tabindex', '-3');
+        this.memoryView.setAttribute('tabindex', '-4');
+
+        //this.registersView.setAttribute('aria-live', 'polite');
+        this.consoleView.textArea.setAttribute('role', 'log');
+        //this.assemblyView.setAttribute('role', 'rowgroup');
     }
 
     onCPULoad() {
