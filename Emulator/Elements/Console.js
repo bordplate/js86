@@ -50,6 +50,7 @@ export class Console extends HTMLElement {
 
         this.ioBuffer.subscribe(SUB_TYPE.OUTPUT, (text) => {
             this.textArea.value += text;
+            this.textArea.scrollTop = this.textArea.scrollHeight;
         })
     }
 
