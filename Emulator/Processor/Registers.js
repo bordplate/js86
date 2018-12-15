@@ -48,7 +48,7 @@ export class Registers {
         });
 
         if (retVal === undefined) {
-            throw CPUError("Tried to access nonexistent register: " + name);
+            throw new CPUError("Tried to access nonexistent register: " + name);
         }
 
         return retVal;
@@ -56,10 +56,14 @@ export class Registers {
 
     setReg(name, value) {
         this.registers.forEach((register) => {
-            register.setReg(name, value);
+            if (register.setReg(name, value) === true) {
+                this.notify(register.name64, value);
+                this.notify(register.name32, value);
+                this.notify(register.name16 ? register.name16 : "", value);
+                this.notify(register.name8hi ? register.name8hi : "", value);
+                this.notify(register.name8 ? register.name8 : "", value);
+            }
         });
-
-        this.notify(name, value);
     }
 
     regByteLen(name) {

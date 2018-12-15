@@ -6,6 +6,8 @@ export class CpuEmulator extends HTMLElement {
 
         this.isRunning = false;
 
+        this.innerHTML = "";
+
         // Load attributes
         this.binaryPath = this.attributes['cpu-binary'].value;
         this.memorySize = this.attributes['memory-size'] ? parseInt(this.attributes['memory-size'].value) : 0x256;
@@ -14,6 +16,13 @@ export class CpuEmulator extends HTMLElement {
             this.attributes['watched-registers'].value.split(',')
             : [];
         this.runSpeed = this.attributes['run-speed'] ? parseInt(this.attributes['run-speed'].value) : 500;
+        this.showConsole = this.attributes['show-console'] ? this.attributes['show-console'].value === "true" : true;
+
+        this.leftContainer = document.createElement("div");
+        this.leftContainer.className = "left-container";
+
+        this.rightContainer = document.createElement('div');
+        this.rightContainer.className = "right-container";
 
         this.stepButton = document.createElement('button');
         this.stepButton.innerText = "Step";
@@ -27,9 +36,12 @@ export class CpuEmulator extends HTMLElement {
         this.resetButton.innerText = "Reset";
         {const veryMuchThis = this; this.resetButton.onclick = () => {veryMuchThis.resetCPU()};}
 
+        this.appendChild(this.leftContainer);
+        this.appendChild(this.rightContainer);
+
         this.buttonContainer = document.createElement("div");
         this.buttonContainer.className = "button-container";
-        this.appendChild(this.buttonContainer);
+        this.leftContainer.appendChild(this.buttonContainer);
 
         this.buttonContainer.appendChild(this.stepButton);
         this.buttonContainer.appendChild(this.runButton);
@@ -41,10 +53,10 @@ export class CpuEmulator extends HTMLElement {
         this.memoryView = document.createElement('cpu-memory');
         this.consoleView = document.createElement('emulator-console');
 
-        this.appendChild(this.assemblyView);
-        this.appendChild(this.consoleView);
-        this.appendChild(this.registersView);
-        this.appendChild(this.memoryView);
+        this.leftContainer.appendChild(this.assemblyView);
+        this.showConsole ? this.rightContainer.appendChild(this.consoleView) : null;
+        this.rightContainer.appendChild(this.registersView);
+        this.rightContainer.appendChild(this.memoryView);
 
         this.configureAccessibility();
 
@@ -81,9 +93,7 @@ export class CpuEmulator extends HTMLElement {
         this.registersView.setAttribute('tabindex', '-3');
         this.memoryView.setAttribute('tabindex', '-4');
 
-        //this.registersView.setAttribute('aria-live', 'polite');
         this.consoleView.textArea.setAttribute('role', 'log');
-        //this.assemblyView.setAttribute('role', 'rowgroup');
     }
 
     onCPULoad() {
@@ -101,11 +111,19 @@ export class CpuEmulator extends HTMLElement {
         });
 
         this.cpu.registers.subscribe((reg, value) => {
-            if (this.watchedRegisters.includes(reg.toLowerCase())) {
-                if (reg.toLowerCase() === "rip") {
-                    this.assemblyView.setCurrentLine(value);
-                }
+            if (reg.toLowerCase() === "rip") {
+                this.assemblyView.setCurrentLine(value);
+            }
 
+            if (reg.toLowerCase() === "rsp") {
+                let rsp = this.stackWatch === "dynamic" ? this.cpu.registers.reg("rsp") : parseInt(this.stackWatch);
+
+                let stack = this.cpu.memory.load(rsp, this.cpu.memory.memory.length - rsp);
+
+                this.memoryView.setMemory(stack);
+            }
+
+            if (this.watchedRegisters.includes(reg.toLowerCase())) {
                 this.registersView.updateRegister(reg, value);
             }
         });
@@ -142,6 +160,8 @@ export class CpuEmulator extends HTMLElement {
 
     resetCPU() {
         this.runButton.className = "";
+        this.runButton.innerText = "Run";
+        this.isRunning = false;
         clearInterval(this.runInterval);
         this.consoleView.clear();
 

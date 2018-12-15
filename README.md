@@ -21,10 +21,20 @@ Custom attributes:
 `cpu-binary`: Path to the binary you want to load. (Required)  
 `memory-size`: Size of the memory you want the emulator to have. (Optional)  
 `stack-watch`: Can be either `dynamic` or a fixed address of the point in stack you want to watch. `dynamic` follows `RSP`. (Optional)   
-`watched-registers`: Registers you want to "watch" (add to the UI), split by `,`. Should probably be lowercase. (Optional)  
+`watched-registers`: Registers you want to "watch" (add to the UI), split by `,`. Should probably be lowercase. (Optional)
+`run-speed`: Milliseconds to wait before progressing to next instruction when in continous "run"-mode. Defaults to 500ms. (Optional)
+`show-console`: `true` or `false` value, whether or not to show the console. Defaults to `true` (Optional)
+
+## Building/bundling
+I recommend bundling with [rollup.js](https://rollupjs.org/guide/en) as that is the easiest when you don't want to include
+a mess of `node_modules` (yes, offence). You still need NPM to install rollup.js: `npm install --global rollup`, but
+then bundling is easy:
+```bash
+rollup Emulator/Emulator.js --file dist/emulator.bundle.js --format iife
+```
 
 # Third-party frameworks and code
 [Capstone](http://www.capstone-engine.org)  
 [Capstone.js](https://github.com/AlexAltea/capstone.js) by [Alexandro Sanchez](https://github.com/AlexAltea)  
-[node-int64](https://github.com/broofa/node-int64) by [Robert Kieffer](https://github.com/broofa)
-[Pretty CSS buttons](https://codepen.io/derekmorash/) by Derek Morash  
+[node-int64](https://github.com/broofa/node-int64) by [Robert Kieffer](https://github.com/broofa)  
+[Pretty CSS buttons](https://codepen.io/derekmorash/) by Derek Morash

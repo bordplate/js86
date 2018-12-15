@@ -14,7 +14,7 @@ export class CpuMemory extends HTMLElement {
                             <div class='byte'>
                                 <span class="mem-address">${i.toString(16)}</span>
                                 <span class="ascii-byte">${String.fromCharCode(byte)}</span>
-                                <span class="hex-byte">${byte.toString(16)}</span>
+                                <span class="hex-byte">${byte.toString(16).padStart(2, "0")}</span>
                             </div>`;
             i += 1;
         });

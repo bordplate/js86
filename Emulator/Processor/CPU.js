@@ -99,6 +99,7 @@ export class CPU {
 
         switch(instruction.mnemonic) {
             case "mov": ih.mov(); break;
+            case "movabs": ih.mov(); break;
             case "jmp": ih.jmp(); break;
             case "push": ih.push(); break;
             case "pop": ih.pop(); break;
@@ -106,7 +107,8 @@ export class CPU {
             case "ret": ih.ret(); break;
             case "int": ih.int(); break;
             case "sub": ih.sub(); break;
-            default: throw CPUError(`Unknown mnemonic: ${instruction.mnemonic}`);
+            case "add": ih.add(); break;
+            default: throw new CPUError(`Unknown mnemonic: ${instruction.mnemonic}`);
         }
 
         // Increase RIP only if RIP has not been changed by the instruction we just ran
@@ -244,12 +246,12 @@ class InstructionHandler {
 
         let memValue = this.cpu.memory.loadUInt(rsp, size);
 
-        if (memValue.toNumber() >= Infinity) {
-            throw CPUError(`Can not pop 0x${memValue.toOctetString()} into ${register}. It is too large for this emulator to handle.`);
+        if (memValue.toNumber(true) >= Infinity) {
+            throw new CPUError(`Can not pop 0x${memValue.toOctetString()} into ${register}. It is too large for this emulator to handle.`);
         }
 
         this.cpu.registers.setReg("rsp", rsp + size);
-        this.cpu.registers.setReg(register, memValue.toNumber(false));
+        this.cpu.registers.setReg(register, memValue.toNumber(true));
     }
 
     /**
@@ -272,6 +274,15 @@ class InstructionHandler {
 
         let register = components[0];
         let newValue = this.parseValue(register).value - this.parseValue(components[1]).value;
+
+        this.cpu.registers.setReg(register, newValue);
+    }
+
+    add() {
+        let components = this.op_str.split(",");
+
+        let register = components[0];
+        let newValue = this.parseValue(register).value + this.parseValue(components[1]).value;
 
         this.cpu.registers.setReg(register, newValue);
     }

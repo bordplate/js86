@@ -1,6 +1,45 @@
 cpu-emulator {
+    background:none;
+    border:none;
+    bottom:auto;
+    clear:none;
+    cursor:default;
+    float:none;
+    font-size:medium;
+    font-style:normal;
+    font-weight:normal;
+    height:auto;
+    left:auto;
+    letter-spacing:normal;
+    line-height:normal;
+    max-height:none;
+    max-width:none;
+    min-height:0;
+    min-width:0;
+    overflow:visible;
+    position:static;
+    right:auto;
+    text-align:left;
+    text-decoration:none;
+    text-indent:0;
+    text-transform:none;
+    top:auto;
+    visibility:visible;
+    white-space:normal;
+    z-index:auto;
+
     width: 800px;
     display: block;
+}
+
+.left-container {
+    height: 100%;
+    float: left;
+}
+
+.right-container {
+    height: 100%;
+    float: right;
 }
 
 /** Buttons **/
@@ -76,7 +115,6 @@ cpu-emulator {
 /** Code view **/
 
 cpu-assembly {
-    float: left;
     font-family: monospace;
     width: 300px;
     display: flex;
@@ -101,7 +139,7 @@ cpu-assembly div:nth-child(2n) {
 }
 
 .address {
-    width: 32px;
+    width: 3em;
     margin-right: 4px;
     border-width: 0;
     border-style: solid;
@@ -141,7 +179,6 @@ cpu-registers {
     grid-template-columns: auto auto auto;
     font-family: monospace;
     font-size: 18px;
-    float: left;
     margin-left: 10px;
     margin-bottom: 10px;
     width: 400px;
@@ -173,7 +210,6 @@ cpu-memory {
     display: flex;
     flex-wrap: wrap;
     font-family: monospace;
-    float: left;
     width: 416px;
     border-radius: 5px;
     margin-left: 10px;

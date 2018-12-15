@@ -34,20 +34,26 @@ export class Register {
         switch(name.toUpperCase()) {
             case this.name64: {
                 this.value = value;
+                return true;
             }
             case this.name32: {
                 this.value = value ^ 0xFFFFFFFF00000000;
+                return true;
             }
             case this.name16: {
                 this.value = value ^ 0xFFFFFFFFFFFF0000;
+                return true;
             }
             case this.name8hi: {
                 this.value = value ^ 0xFFFFFFFFFFFF00FF;
+                return true;
             }
             case this.name8: {
                 this.value = value ^ 0xFFFFFFFFFFFFFF00;
+                return true;
             }
         }
+        return false;
     }
 
     byteLengthOf(name) {

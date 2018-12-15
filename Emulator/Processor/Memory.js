@@ -27,7 +27,13 @@ export class Memory {
     }
 
     store(offset, data) {
-        this.memory.set(data, offset);
+        try {
+            this.memory.set(data, offset);
+        } catch (error) {
+            if (error instanceof RangeError) {
+                throw new CPUError("Data too large to store in memory.");
+            }
+        }
 
         // Notify subscribers that memory has changed.
         this.notify();
