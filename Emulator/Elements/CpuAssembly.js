@@ -2,6 +2,8 @@ export class CpuAssembly extends HTMLElement {
     constructor() {
         super();
 
+        this.codeSize = false;
+
         // Got this random string generator from:
         // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
         this.uniqueName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 8);
@@ -21,6 +23,10 @@ export class CpuAssembly extends HTMLElement {
 
     loadAssembly(assembly) {
         this.innerHTML = assembly.flatMap((instruction) => {
+            if (parseInt(instruction[0], 16) > this.codeSize) {
+                return;
+            }
+
             return `
                         <div tabindex="-30" role="row" class="code-line" id="${this.uniqueName}-line-0x${instruction[0]}">
                             <span class="address">0x${instruction[0].toUpperCase().padStart(2, "0")}</span>

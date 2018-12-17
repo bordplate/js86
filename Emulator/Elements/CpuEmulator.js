@@ -17,6 +17,7 @@ export class CpuEmulator extends HTMLElement {
             : [];
         this.runSpeed = this.attributes['run-speed'] ? parseInt(this.attributes['run-speed'].value) : 500;
         this.showConsole = this.attributes['show-console'] ? this.attributes['show-console'].value === "true" : true;
+        this.codeSize = this.attributes['code-size'] ? this.attributes['code-size'].value : "dynamic";
 
         this.leftContainer = document.createElement("div");
         this.leftContainer.className = "left-container";
@@ -57,6 +58,8 @@ export class CpuEmulator extends HTMLElement {
         this.showConsole ? this.rightContainer.appendChild(this.consoleView) : null;
         this.rightContainer.appendChild(this.registersView);
         this.rightContainer.appendChild(this.memoryView);
+
+        this.assemblyView.codeSize = parseInt(this.codeSize);
 
         this.configureAccessibility();
 
