@@ -108,6 +108,9 @@ export class CPU {
             case "int": ih.int(); break;
             case "sub": ih.sub(); break;
             case "add": ih.add(); break;
+            case "je": ih.je(); break;
+            case "jne": ih.jne(); break;
+            case "cmp": ih.cmp(); break;
             default: throw new CPUError(`Unknown mnemonic: ${instruction.mnemonic}`);
         }
 
@@ -145,6 +148,7 @@ class InstructionHandler {
         var value = 0x0;
         var valueSize = 0x0;
         var address = null;
+        var name = null;
 
         if (isNaN(val)) {
             if (val.includes("ptr")) {
@@ -166,6 +170,7 @@ class InstructionHandler {
                 }
 
                 if (isNaN(address)) { // Assume it's a register
+                    name = address;
                     address = this.cpu.registers.reg(address);
                 } else {
                     address = parseInt(address);
@@ -174,6 +179,7 @@ class InstructionHandler {
                 value = this.cpu.memory.loadUInt(address, size);
                 valueSize = size;
             } else { // Assume val is a register
+                name = val;
                 value = this.cpu.registers.reg(val);
                 valueSize = this.cpu.registers.regByteLen(val);
             }
@@ -182,7 +188,7 @@ class InstructionHandler {
             valueSize = 0x8;
         }
 
-        return {"value": value, "size": valueSize, "address": address};
+        return {"value": value, "size": valueSize, "address": address, "name": name};
     }
 
     /**
@@ -216,6 +222,40 @@ class InstructionHandler {
         }
 
         this.cpu.registers.setReg("RIP", address.value);
+    }
+
+    /*
+    * Conditional jumping
+     */
+    je() {
+        if (this.cpu.registers.flag("ZF")) {
+            this.jmp();
+        }
+    }
+
+    jne() {
+        if (!this.cpu.registers.flag("ZF")) {
+            this.jmp();
+        }
+    }
+
+    /*
+     *  cmp is basically sub, but without the side effect, apparently.
+     */
+    cmp() {
+        let components = this.op_str.split(",");
+
+        let register = this.parseValue(components[0]);
+        let right = this.parseValue(components[1]);
+        let newValue = (register.value - right.value) % (2 ^ (register.size * 8));
+
+        // Set relevant flags
+        this.cpu.registers.setFlag("ZF", newValue === 0);
+        this.cpu.registers.setFlag("SF", newValue < 0);
+        this.cpu.registers.setFlag("CF", (register.value - right.value) > 2 ^ (register.size * 8));
+        this.cpu.registers.setFlag("PF", !(newValue % 2));
+        this.cpu.registers.setFlag("OF", register.value !== newValue + right.value || right.value !== -newValue + register.value)
+        // TODO: Set Auxiliary flag if relevant
     }
 
     /**
@@ -276,19 +316,37 @@ class InstructionHandler {
     sub() {
         let components = this.op_str.split(",");
 
-        let register = components[0];
-        let newValue = this.parseValue(register).value - this.parseValue(components[1]).value;
+        let register = this.parseValue(components[0]);
+        let right = this.parseValue(components[1]);
+        let newValue = (register.value - right.value) % (2 ^ (register.size * 8));
 
-        this.cpu.registers.setReg(register, newValue);
+        // Set relevant flags
+        this.cpu.registers.setFlag("ZF", newValue === 0);
+        this.cpu.registers.setFlag("SF", newValue < 0);
+        this.cpu.registers.setFlag("CF", (register.value - right.value) > 2 ^ (register.size * 8));
+        this.cpu.registers.setFlag("PF", !(newValue % 2));
+        this.cpu.registers.setFlag("OF", register.value !== newValue + right.value || right.value !== -newValue + register.value)
+        // TODO: Set Auxiliary flag if relevant
+
+        this.cpu.registers.setReg(register.name, newValue);
     }
 
     add() {
         let components = this.op_str.split(",");
 
-        let register = components[0];
-        let newValue = this.parseValue(register).value + this.parseValue(components[1]).value;
+        let register = this.parseValue(components[0]);
+        let right = this.parseValue(components[1]);
+        let newValue = (register.value + right.value) % (2 ^ (register.size * 8));
 
-        this.cpu.registers.setReg(register, newValue);
+        // Set relevant flags
+        this.cpu.registers.setFlag("ZF", newValue === 0);
+        this.cpu.registers.setFlag("SF", newValue < 0);
+        this.cpu.registers.setFlag("CF", (register.value + right.value) > 2 ^ (register.size * 8));
+        this.cpu.registers.setFlag("PF", !(newValue % 2));
+        this.cpu.registers.setFlag("OF", register.value !== newValue - right.value || right.value !== newValue - register.value)
+        // TODO: Set Auxiliary flag if relevant
+
+        this.cpu.registers.setReg(register.name, newValue);
     }
 
     /**
@@ -304,7 +362,7 @@ class InstructionHandler {
 
     /**
      * Int-instructions are repurposed to call "native" JavaScript functions
-     * (Calling JavaScript functions "native" hurts my soul, but they're move native than an emulated CPU tbh)
+     * (Calling JavaScript functions "native" hurts my soul, but they're more native than an emulated CPU tbh)
      */
     int() {
         let value = this.parseValue(this.op_str);

@@ -12,7 +12,8 @@ export class Registers {
             new Register('RSP', 'ESP', 'SP', null, 'SPL'),
             new Register('RBP', 'EBP', 'BP', null, 'BPL'),
             new Register('RIP', 'EIP', 'IP', null, null),
-            new Register('RDI', 'EDI', 'DI', null, null)
+            new Register('RDI', 'EDI', 'DI', null, null),
+            new Register("RFLAGS", "EFLAGS", "FLAGS", null, null)
         ];
 
         this.subscribers = [];
@@ -82,5 +83,51 @@ export class Registers {
         }
 
         return retVal;
+    }
+
+    static flagMask(flagName) {
+        switch(flagName) {
+            case "CF": return 0x0001;       // Carry flag
+            case "R1": return 0x0002;       // Reserved
+            case "PF": return 0x0004;       // Parity flag
+            case "R2": return 0x0008;       // Reserved
+            case "AF": return 0x0010;       // Adjust flag
+            case "R3": return 0x0020;       // Reserved
+            case "ZF": return 0x0040;       // Zero flag
+            case "SF": return 0x0080;       // Sign flag
+            case "TF": return 0x0100;       // Trap flag
+            case "IF": return 0x0200;       // Interrupt enable flag
+            case "DF": return 0x0400;       // Direction flag
+            case "OF": return 0x0800;       // Overflow flag
+            case "IOPL": return 0x3000;     // I/O Privilege flag
+            case "NT": return 0x4000;       // Nested task flag
+            case "R4": return 0x8000;       // Reserved
+
+            // EFLAGS
+            case "RF": return 0x00010000;   // Resume flag
+            case "VM": return 0x00020000;   // Virtual 8086 mode flag
+            case "AC": return 0x00040000;   // Alignment check
+            case "VIF": return 0x00080000;  // Virtual interrupt flag
+            case "VIP": return 0x00100000;  // Virtual interrupt pending
+            case "ID": return 0x00200000;   // Able to use CPUID instruction
+
+            default: return 0x0;
+        }
+    }
+
+    setFlag(name, value) {
+        let current = this.reg("EFLAGS");
+        let mask = Registers.flagMask(name);
+
+        if (this.flag(name) === value) {
+            return;
+        }
+
+        this.setReg("EFLAGS", value ? current | mask : current - mask);
+    }
+
+    flag(name, value) {
+        let mask = Registers.flagMask(name);
+        return !!(this.reg("EFLAGS") & mask);  // Force boolean
     }
 }
