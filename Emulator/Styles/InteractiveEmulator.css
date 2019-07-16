@@ -169,6 +169,36 @@ cpu-assembly div:nth-child(2n) {
 .mnemonic {
     width: 50px;
     font-weight: bold;
+    color: black;
+}
+
+.label {
+    display: flex;
+}
+
+.label-name {
+    margin-top: 20px;
+}
+
+.label-entrypoint {
+    margin-top: 0;
+}
+
+.label-entrypoint, .label-name {
+    color: #6e6e6e;
+    font-weight: bold;
+}
+
+.op_str-label {
+    color: #6e6e6e;
+    font-weight: bold;
+}
+
+.op_str-register {
+    color: #e74c3c;
+}
+
+.op_str-number {
     color: blue;
 }
 
