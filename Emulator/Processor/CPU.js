@@ -144,6 +144,7 @@ class InstructionHandler {
     parseValue(val) {
         var value = 0x0;
         var valueSize = 0x0;
+        var address = null;
 
         if (isNaN(val)) {
             if (val.includes("ptr")) {
@@ -153,7 +154,7 @@ class InstructionHandler {
 
                 let sizeDefinition = components[0];
                 let ptr = components[1];
-                var address = components[2]
+                address = components[2]
                     .replace("[", "")
                     .replace("]", "");
 
@@ -181,7 +182,7 @@ class InstructionHandler {
             valueSize = 0x8;
         }
 
-        return {"value": value, "size": valueSize};
+        return {"value": value, "size": valueSize, "address": address};
     }
 
     /**
@@ -198,6 +199,9 @@ class InstructionHandler {
         // --- Parse left side --- //
         if (!left.includes("ptr")) { // Left is just a register. I hope.
             this.cpu.registers.setReg(left, right.value);
+        } else {
+            left = this.parseValue(left);
+            this.cpu.memory.store(left.address, right.value, left.size);
         }
     }
 

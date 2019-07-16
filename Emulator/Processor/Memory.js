@@ -26,7 +26,19 @@ export class Memory {
         });
     }
 
-    store(offset, data) {
+    store(offset, data, size = 8) {
+        if (!isNaN(data)) {
+            // Convert integer to Uint8Array, basically. 
+            data = data
+                .toString(16)
+                .padStart(size * 2, "0")
+                .match(/.{1,2}/g)
+                .map((val) => {
+                        return parseInt(val, 16);
+                    }
+                );
+        }
+
         try {
             this.memory.set(data, offset);
         } catch (error) {
