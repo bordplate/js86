@@ -245,16 +245,16 @@ class InstructionHandler {
     cmp() {
         let components = this.op_str.split(",");
 
-        let register = this.parseValue(components[0]);
+        let left = this.parseValue(components[0]);
         let right = this.parseValue(components[1]);
-        let newValue = (register.value - right.value) % (2 ^ (register.size * 8));
+        let newValue = (left.value - right.value) % (2 ^ (left.size * 8));
 
         // Set relevant flags
         this.cpu.registers.setFlag("ZF", newValue === 0);
         this.cpu.registers.setFlag("SF", newValue < 0);
-        this.cpu.registers.setFlag("CF", (register.value - right.value) > 2 ^ (register.size * 8));
+        this.cpu.registers.setFlag("CF", (left.value - right.value) > 2 ^ (left.size * 8));
         this.cpu.registers.setFlag("PF", !(newValue % 2));
-        this.cpu.registers.setFlag("OF", register.value !== newValue + right.value || right.value !== -newValue + register.value)
+        this.cpu.registers.setFlag("OF", left.value !== newValue + right.value || right.value !== -newValue + left.value)
         // TODO: Set Auxiliary flag if relevant
     }
 
