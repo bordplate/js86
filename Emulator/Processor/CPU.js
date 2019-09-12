@@ -22,6 +22,8 @@ export class CPU {
         this.registers.setReg("RIP", 0x0);
         this.registers.setReg("RSP", memorySize);
 
+        this.onEndCallbacks = [];
+
         // Initializes the Capstone engine. Is used throughout the "CPU"
         // It's just easier to emulate based on simple mnemonics rather than opcodes.
         this.disassembler = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
@@ -121,6 +123,15 @@ export class CPU {
         }
     }
 
+    onEnd(callback) {
+        this.onEndCallbacks.push(callback);
+    }
+
+    ended(reason) {
+        this.onEndCallbacks.forEach((callback) => {
+            callback(reason);
+        });
+    }
 }
 
 /**
@@ -318,12 +329,12 @@ class InstructionHandler {
 
         let register = this.parseValue(components[0]);
         let right = this.parseValue(components[1]);
-        let newValue = (register.value - right.value) % (2 ^ (register.size * 8));
+        let newValue = (register.value - right.value) % Math.pow(2, (register.size * 8));
 
         // Set relevant flags
         this.cpu.registers.setFlag("ZF", newValue === 0);
         this.cpu.registers.setFlag("SF", newValue < 0);
-        this.cpu.registers.setFlag("CF", (register.value - right.value) > 2 ^ (register.size * 8));
+        this.cpu.registers.setFlag("CF", (register.value - right.value) > Math.pow(2, (register.size * 8)));
         this.cpu.registers.setFlag("PF", !(newValue % 2));
         this.cpu.registers.setFlag("OF", register.value !== newValue + right.value || right.value !== -newValue + register.value)
         // TODO: Set Auxiliary flag if relevant
@@ -336,12 +347,12 @@ class InstructionHandler {
 
         let register = this.parseValue(components[0]);
         let right = this.parseValue(components[1]);
-        let newValue = (register.value + right.value) % (2 ^ (register.size * 8));
+        let newValue = (register.value + right.value) % Math.pow(2, (register.size * 8));
 
         // Set relevant flags
         this.cpu.registers.setFlag("ZF", newValue === 0);
         this.cpu.registers.setFlag("SF", newValue < 0);
-        this.cpu.registers.setFlag("CF", (register.value + right.value) > 2 ^ (register.size * 8));
+        this.cpu.registers.setFlag("CF", (register.value + right.value) > Math.pow(2, (register.size * 8)));
         this.cpu.registers.setFlag("PF", !(newValue % 2));
         this.cpu.registers.setFlag("OF", register.value !== newValue - right.value || right.value !== newValue - register.value)
         // TODO: Set Auxiliary flag if relevant
@@ -374,6 +385,7 @@ class InstructionHandler {
             case 2: nativeFunction.getInput(); break;
             case 3: nativeFunction.exit(); break;
             case 4: nativeFunction.printf(); break;
+            case 5: nativeFunction.restart(); break;
         }
     }
 }
@@ -420,6 +432,16 @@ class NativeFunction {
         console.log("Instruction end");
         this.cpu.ioBuffer.output("Finished running program.");
         this.cpu.done = true;
+
+        this.cpu.ended("end");
+    }
+
+    restart() {
+        console.log("Instruction end");
+        this.cpu.ioBuffer.output("Finished running program.");
+        this.cpu.done = true;
+
+        this.cpu.ended("restart");
     }
 
     /**

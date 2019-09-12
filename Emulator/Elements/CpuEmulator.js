@@ -131,6 +131,18 @@ export class CpuEmulator extends HTMLElement {
             }
         });
 
+        this.cpu.onEnd((reason) => {
+            this.isRunning = false;
+
+            if (reason === "restart") {
+                this.resetCPU();
+
+                this.runCPU();
+            } else {
+                this.runButton.className = "disabled-running";
+            }
+        });
+
         let rsp = this.stackWatch === "dynamic" ? this.cpu.registers.reg("rsp") : parseInt(this.stackWatch);
         let stack = this.cpu.memory.load(rsp, this.cpu.memory.memory.length - rsp);
         this.memoryView.setMemory(stack);
@@ -140,14 +152,27 @@ export class CpuEmulator extends HTMLElement {
         this.cpu.registers.notifyAll();
     }
 
-    runCPU() {
+    async runCPU() {
+        if (this.runButton.className === "disabled-running") {
+            return;
+        }
+
         if(!this.isRunning) {
             this.runButton.className += "active-running";
             this.runButton.innerText = "Stop";
             var veryMuchThis = this;
             this.isRunning = true;
             this.runInterval = setInterval(() => {
-                veryMuchThis.stepCPU()
+                veryMuchThis.stepCPU();
+
+                // Process 50 instructions at the time if we have no speed limit
+                // We can't just run a while true-loop because it blocks the UI.
+                if (veryMuchThis.runSpeed <= 0) {
+                    for(var i = 0; i<50;i++) {
+                        veryMuchThis.stepCPU();
+                    }
+                }
+
             }, this.runSpeed);
         } else {
             this.isRunning = false;
