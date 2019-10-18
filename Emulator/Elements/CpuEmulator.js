@@ -1,4 +1,5 @@
 import {CPU} from "../Processor/CPU.js";
+import {Loader} from "../Loaders/Loader.js";
 
 export class CpuEmulator extends HTMLElement {
     constructor() {
@@ -18,6 +19,7 @@ export class CpuEmulator extends HTMLElement {
         this.runSpeed = this.attributes['run-speed'] ? parseInt(this.attributes['run-speed'].value) : 500;
         this.showConsole = this.attributes['show-console'] ? this.attributes['show-console'].value === "true" : true;
         this.codeSize = this.attributes['code-size'] ? this.attributes['code-size'].value : "dynamic";
+        this.loaderName = this.attributes['loader'] ? this.attributes['loader'].value : "Raw";
 
         this.leftContainer = document.createElement("div");
         this.leftContainer.className = "left-container";
@@ -72,21 +74,35 @@ export class CpuEmulator extends HTMLElement {
         this.memoryView.memorySize = this.memorySize;
 
         // Load CPU
-        CpuEmulator.loadBinary(this.binaryPath, (binary) => {
+        CpuEmulator.loadBinary(this.binaryPath, async (binary) => {
             var hexDump = "";
             binary.forEach((byte) => {
                 hexDump += byte.toString(16).padStart(2, "0") + " ";
             });
 
-            console.log("Loading code: ");
-            console.log(hexDump);
+            console.log("Loading CPU.");
 
-            this.cpu = new CPU(this.memorySize);
-            this.cpu.loadCode(binary);
+            // Support for custom loaders (ELFs, PEs, MachOs, etc)
+            let loaderName = this.loaderName + "Loader";
+            //try {
+                var loaderModule = await import(`../Loaders/${loaderName}.js`);
 
-            console.log("Loaded CPU. Disassembly: \n" + this.cpu.fullDisassembledCode().join("\n"));
+                this.loader = new loaderModule[loaderName](this.memorySize);
+                await this.loader.loadBinary(binary);
 
-            this.onCPULoad();
+                this.cpu = this.loader.getCPU();
+
+                console.log("Loaded CPU.");
+
+                this.onCPULoad();
+            /*} catch (exception) {
+                if (exception instanceof TypeError) {
+                    //alert("Could not import loader with name: " + loaderName);
+                    console.log("Could not import loader with name: " + loaderName);
+                } else {
+                    console.log(exception.message);
+                }
+            }*/
         });
     }
 
@@ -102,7 +118,7 @@ export class CpuEmulator extends HTMLElement {
     onCPULoad() {
         this.consoleView.setIOBuffer(this.cpu.ioBuffer);
 
-        this.assemblyView.loadAssembly(this.cpu.fullDisassembledCode());
+        this.assemblyView.loadAssembly(this.cpu.disassembly(this.loader.codeStartOffset, this.loader.visualCodeSize, this.loader.codeStartOffset), this.loader);
 
         // Subscribe to memory changes
         this.cpu.memory.subscribe(() => {

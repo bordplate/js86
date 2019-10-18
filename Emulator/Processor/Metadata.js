@@ -1,6 +1,9 @@
+import {Loader} from '../Loaders/Loader.js'
+
 export class Metadata {
-    constructor(assembly) {
+    constructor(assembly, loader) {
         this.assembly = assembly;
+        this.loader = loader;
 
         this.addressInformation = {};
     }
@@ -79,7 +82,7 @@ export class Metadata {
                 return op_str;
             });
 
-            if (address === 0) {
+            if (address === this.loader.entrypoint) {
                 addressInformation.label = true;
                 addressInformation.labelName = "entrypoint";
                 addressInformation.entrypoint = true;

@@ -193,6 +193,21 @@ cpu-assembly div:nth-child(2n) {
 
 .current-line>.arrow {
     display: block;
+    border-left: 10px solid rgba(141, 219, 144, 1) !important;
+}
+
+.breakpoint {
+    /*background-color: rgba(116, 215, 237, 0.5) !important;*/
+}
+
+.breakpoint>.arrow {
+    display: block;
+    border-left: 10px solid rgba(63, 153, 247, 1);
+}
+
+.breakpoint>.address {
+    background-color: rgba(63, 153, 247, 1) !important;
+    color: white;
 }
 
 .mnemonic {

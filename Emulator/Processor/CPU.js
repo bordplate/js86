@@ -1,6 +1,7 @@
 import {Registers} from './Registers.js'
 import {Memory} from './Memory.js'
 import {IOBuffer} from './IOBuffer.js';
+import {Loader} from '../Loaders/Loader.js';
 
 export class CPUError extends Error {}
 
@@ -72,6 +73,24 @@ export class CPU {
     }
 
     /**
+     * Returns full disassembled binary code.
+     *
+     * @returns {Array} Array of instructions (mnemonic and op str)
+     */
+    disassembly(memoryStartOffset, memoryEndOffset, vmOffset = 0x0) {
+        let instructions = this.disassembler.disasm(this.memory.load(memoryStartOffset, memoryEndOffset), vmOffset);
+
+        let disassembled = [];
+
+        // TODO: Could like flatMap or whatever? I use maps way too little :(
+        instructions.forEach((instruction) => {
+            disassembled.push([instruction.address.toString(16), instruction.mnemonic, instruction.op_str]);
+        });
+
+        return disassembled;
+    }
+
+    /**
      * Steps through the code.
      */
     nextInstruction() {
@@ -85,7 +104,7 @@ export class CPU {
 
         // Disassemble one instruction off memory
         let instruction = this.disassembler.disasm(
-            this.memory.load(instructionPointer, this.codeSize),
+            this.memory.load(instructionPointer, 32),
             instructionPointer, 0x1
         )[0];
 
@@ -97,11 +116,16 @@ export class CPU {
             console.log(`📌 ${instruction.address.toString(16)}: ${instruction.mnemonic}\t${instruction.op_str}`);
         }
 
+        // Progress instruction pointer
+        instructionPointer += instruction.size;
+        this.registers.setReg("rip", instructionPointer);
+
         let ih = new InstructionHandler(this, instruction.op_str, instruction.size);
 
         switch(instruction.mnemonic) {
             case "mov": ih.mov(); break;
             case "movabs": ih.mov(); break;
+            case "lea": ih.lea(); break;
             case "jmp": ih.jmp(); break;
             case "push": ih.push(); break;
             case "pop": ih.pop(); break;
@@ -114,12 +138,6 @@ export class CPU {
             case "jne": ih.jne(); break;
             case "cmp": ih.cmp(); break;
             default: throw new CPUError(`Unknown mnemonic: ${instruction.mnemonic}`);
-        }
-
-        // Increase RIP only if RIP has not been changed by the instruction we just ran
-        if (instructionPointer === this.registers.reg("RIP") && this.doNotProgress === false && !this.done) {
-            instructionPointer += instruction.size;
-            this.registers.setReg("rip", instructionPointer);
         }
     }
 
@@ -169,9 +187,9 @@ class InstructionHandler {
 
                 let sizeDefinition = components[0];
                 let ptr = components[1];
-                address = components[2]
+                /*address = components[2]
                     .replace("[", "")
-                    .replace("]", "");
+                    .replace("]", "");*/
 
                 switch(sizeDefinition) {
                     case "qword": size = 0x8; break;
@@ -180,12 +198,30 @@ class InstructionHandler {
                     case "byte":  size = 0x1; break;
                 }
 
-                if (isNaN(address)) { // Assume it's a register
-                    name = address;
-                    address = this.cpu.registers.reg(address);
-                } else {
-                    address = parseInt(address);
-                }
+                // Resolve address
+                let addressComponents = val.split("[")[1].split("]")[0].split(" ");
+                address = 0;
+                var operation = "+";
+
+                addressComponents.forEach((component) => {
+                    var realValue = 0;
+
+                    if (component === "+" || component === "-" || component === "*" || component === "/") {
+                        operation = component;
+                    } else if (isNaN(component)) { // Assume it's a register
+                        name = component;
+                        realValue = this.cpu.registers.reg(component);
+                    } else {
+                        realValue = parseInt(component);
+                    }
+
+                    switch(operation) {
+                        case "+": address += realValue; break;
+                        case "-": address -= realValue; break;
+                        case "*": address *= realValue; break;
+                        case "/": address /= realValue; break;
+                    }
+                });
 
                 value = this.cpu.memory.loadUInt(address, size);
                 valueSize = size;
@@ -219,6 +255,23 @@ class InstructionHandler {
         } else {
             left = this.parseValue(left);
             this.cpu.memory.store(left.address, right.value, left.size);
+        }
+    }
+
+    lea() {
+        let sides = this.op_str.split(",");
+        let left = sides[0].trim();
+        let right = sides[1].trim();
+
+        // --- Parse right side --- //
+        right = this.parseValue(right);
+
+        // --- Parse left side --- //
+        if (!left.includes("ptr")) { // Left is just a register. I hope.
+            this.cpu.registers.setReg(left, right.address);
+        } else {
+            left = this.parseValue(left);
+            this.cpu.memory.store(left.address, right.address, left.size);
         }
     }
 
@@ -314,7 +367,7 @@ class InstructionHandler {
      *  obviously ignoring it. grr.
      */
     call() {
-        let newRip = this.cpu.registers.reg("rip") + this.inst_size;
+        let newRip = this.cpu.registers.reg("rip");
         this.cpu.registers.setReg("rip", newRip);
 
         let ih = new InstructionHandler(this.cpu, "rip");
@@ -386,6 +439,7 @@ class InstructionHandler {
             case 3: nativeFunction.exit(); break;
             case 4: nativeFunction.printf(); break;
             case 5: nativeFunction.restart(); break;
+            case 6: nativeFunction.call(); break;
         }
     }
 }
@@ -406,6 +460,7 @@ class NativeFunction {
         message = message.substring(0, message.length);
 
         this.cpu.ioBuffer.output(message);
+        alert(message);
     }
 
     getInput() {
@@ -455,5 +510,20 @@ class NativeFunction {
         let argument = this.cpu.memory.loadString(argumentPointer, 0x00).trim();
 
         this.cpu.ioBuffer.output(format.replace("%s", argument));
+    }
+
+    /**
+     *
+     */
+    call() {
+        let symbolNamePointer = this.cpu.registers.reg("rdi");
+        let libraryNamePointer = this.cpu.registers.reg("rax");
+
+        let symbolName = this.cpu.memory.loadString(symbolNamePointer, 0x00);
+        let libraryName = this.cpu.memory.loadString(libraryNamePointer, 0x00);
+
+        let library = new (Loader.getLibrary(libraryName))(this.cpu);
+
+        library[symbolName]();
     }
 }

@@ -13,6 +13,7 @@ export class Registers {
             new Register('RBP', 'EBP', 'BP', null, 'BPL'),
             new Register('RIP', 'EIP', 'IP', null, null),
             new Register('RDI', 'EDI', 'DI', null, null),
+            new Register('R14', null, null, null, null),
             new Register("RFLAGS", "EFLAGS", "FLAGS", null, null)
         ];
 
@@ -25,14 +26,22 @@ export class Registers {
 
     notify(reg, value) {
         this.subscribers.forEach((callback) => {
-            callback(reg, value);
+            try {
+                callback(reg, value);
+            } catch (exception) {
+                console.log(exception);
+            }
         });
     }
 
     notifyAll() {
         this.subscribers.forEach((callback) => {
             this.registers.forEach((register) => {
-                callback(register.name64, register.value);
+                try {
+                    callback(register.name64, register.value);
+                } catch (exception) {
+                    console.log(exception);
+                }
             });
         });
     }

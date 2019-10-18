@@ -4,17 +4,21 @@
     <meta charset="UTF-8">
     <title>ROP Interactive</title>
     <script src="Emulator/Emulator.js" type="module"></script>
+    <script src="Emulator/Libraries/macOS/FoundationFramework.js" type="module"></script>
+    <script src="Emulator/Libraries/macOS/libobjc.dylib.js" type="module"></script>
+    <script src="Emulator/Libraries/macOS/libSystem.js" type="module"></script>
     <script src="Emulator/capstone-x86.min.js"></script>
     <link rel="stylesheet" href="Emulator/Styles/InteractiveEmulator.css" />
 </head>
     <body style="display:grid;">
         <cpu-emulator
-                cpu-binary="binaries/arguments"
-                memory-size="0x256"
-                code-size="0x3b"
+                cpu-binary="binaries/macho"
+                memory-size="0x10000"
+                code-size="dynamic"
                 stack-watch="dynamic"
-                run-speed="400"
-                watched-registers="rip,rsp,rax,rbp,rcx,rdi,rsi"
+                run-speed="0"
+                loader="MachO"
+                watched-registers="rip,rsp,rax,rdi"
                 show-console="true">
         </cpu-emulator>
     </body>

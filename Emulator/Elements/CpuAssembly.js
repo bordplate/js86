@@ -16,15 +16,18 @@ export class CpuAssembly extends HTMLElement {
         var allLines = this.getElementsByClassName('code-line');
 
         Array.prototype.forEach.call(allLines, function (element) {
-            element.className = "code-line";
+            if (element.classList.contains("breakpoint")) {
+                element.className = "code-line breakpoint";
+            } else {
+                element.className = "code-line";
+            }
         });
 
-        document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`).className = "code-line current-line";
-        //document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`).setAttribute('aria-live', 'polite');
+        document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`).classList.add("current-line");
     }
 
-    loadAssembly(assembly) {
-        let metadata = new Metadata(assembly);
+    loadAssembly(assembly, loader) {
+        let metadata = new Metadata(assembly, loader);
         metadata.analyze();
 
         this.innerHTML = assembly.flatMap((instruction) => {
@@ -39,7 +42,7 @@ export class CpuAssembly extends HTMLElement {
             let addressMetadata = metadata.informationForAddress(instruction[0]);
 
             if (addressMetadata !== undefined) {
-                let isEntrypoint = !!(addressMetadata.entrypoint)
+                let isEntrypoint = !!(addressMetadata.entrypoint);
 
                 if (addressMetadata.label) {
                     html += `
@@ -57,7 +60,7 @@ export class CpuAssembly extends HTMLElement {
             }
 
             html += `
-                        <div tabindex="-30" role="row" class="code-line" id="${this.uniqueName}-line-0x${instruction[0]}">
+                        <div tabindex="-30" role="row" class="code-line" data-instruction="${instruction[0]}" id="${this.uniqueName}-line-0x${instruction[0]}">
                             <span class="address">0x${instruction[0].toUpperCase().padStart(2, "0")}</span>
                             <span class="arrow"></span>
                             <span class="mnemonic">${instruction[1]}</span>&#9;&#9;
@@ -66,5 +69,16 @@ export class CpuAssembly extends HTMLElement {
 
             return html;
         }).join('\n');
+
+        Array.from(document.getElementsByClassName("code-line")).forEach((element) => {
+            let addressElement = element.getElementsByClassName("address").item(0);
+            {const veryMuchThis = this; addressElement.onclick = () => {veryMuchThis.addBreakpoint(element.getAttribute("data-instruction"))};}
+        });
+    }
+
+    addBreakpoint(instruction) {
+        let item = document.getElementById(`${this.uniqueName}-line-0x${instruction}`);
+
+        item.classList.add("breakpoint")
     }
 }
