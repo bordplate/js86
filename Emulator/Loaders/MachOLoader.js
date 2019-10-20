@@ -25,10 +25,24 @@ export class MachOLoader extends Loader {
         KaitaiGlue.load("MachO");
     }
 
+    /**
+     * Libraries in Mach-Os are specified by absolute path, which doesn't
+     *  work very well for most web apps. So dylibs will specify their real path
+     *  as an alias.
+     *
+     * @param name
+     * @param alias
+     */
     static addLibraryAlias(name, alias) {
         MachOLoader.prototype.libraryAliases[name] = alias;
     }
 
+    /**
+     * Getting the real path of a library instead of OS absolute path.
+     *
+     * @param name
+     * @returns {*}
+     */
     static getLibrary(name) {
         return MachOLoader.prototype.libraryAliases[name];
     }
@@ -57,15 +71,29 @@ export class MachOLoader extends Loader {
         this.binary.set(addressValue, localAddress);
     }
 
+    /**
+     * Translate virtual address to physical address.
+     *
+     * @param address
+     * @returns {number}
+     */
     translateAddress(address) {
         return address - this.pageZeroSize;
     }
 
+    // Cheat for being able to sleep execution a bit
     timeout(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    /**
+     * Processes load commands and dynamic linking for binary.
+     *
+     * @param binary
+     * @returns {Promise<*>}
+     */
     async loadBinary(binary) {
+        // Wait for Kaitai Mach-O class to load.
         while(typeof MachO === "undefined") {
             await this.timeout(100);
         }
@@ -74,12 +102,19 @@ export class MachOLoader extends Loader {
 
         this.macho = new MachO(new KaitaiStream(binary));
 
+        // Process load commands.
+        // I don't think load commands should need to be in a particular order,
+        //  but segments will definitely be way off if they're in a weird order in the binary.
         await this.macho.loadCommands.forEach((loadCommand) => {
             // Parse segments to figure out how much RAM we need and stuff
             if (loadCommand.type === MachO.LoadCommandType.SEGMENT_64 || loadCommand.type === MachO.LoadCommandType.SEGMENT) {
                 this.minimumRam += loadCommand.body.filesize;
                 this.segments.push(loadCommand.body);
 
+                // __PAGEZERO is usually 4GB of virtual memory in 64-bit binaries,
+                //  but that doesn't work with Capstone, so we just ignore it tbh.
+                // It's basically used for making sure null pointer references don't
+                //  do any harm. We could set it to 4KB or something, but I don't care.
                 if (loadCommand.body.segname === "__PAGEZERO") {
                     this.pageZeroSize = loadCommand.body.vmsize;
                     this.vmOffset = loadCommand.body.vmsize;
@@ -93,6 +128,8 @@ export class MachOLoader extends Loader {
                         }
                     });
                 }
+
+                // TODO: Load memory protections in segments (rwx, etc) when CPU supports that.
             }
 
             if (loadCommand.type === MachO.LoadCommandType.MAIN) {
@@ -106,6 +143,8 @@ export class MachOLoader extends Loader {
             }
 
             // Load external libraries (dylibs)
+            // TODO: Don't load libraries that are already loaded previously (e.g. when
+            //   libSystem is loaded in main binary and libobjc)
             if (loadCommand.type === MachO.LoadCommandType.LOAD_DYLIB) {
                 this.loadingLibraries += 1;
 
@@ -132,11 +171,16 @@ export class MachOLoader extends Loader {
             }
         });
 
+        // Library binaries are loaded async, so we need to make sure
+        //  they're loaded before progress.
         while(this.loadingLibraries > 0) {
             await this.timeout(100);
         }
 
         // Resolve symbols from other binaries
+        // This is a bit of a state machine thing with opcodes and stuff,
+        //  it's weird.
+        // Also, it's very basic, it definitely does not resolve everything correctly.
         if (this.dyld_info !== false) {
             var dylibNum = 0;
             var symbol = "";
@@ -180,10 +224,12 @@ export class MachOLoader extends Loader {
         return binary;
     }
 
+    /**
+     * Creates CPU with enough memory, sets RIP to entrypoint.
+     *
+     * @returns {CPU}
+     */
     getCPU() {
-        let alloc = new Int64(this.binary.subarray(8192, 8192 + 8));
-        console.log(`_objc_alloc should be at: ${alloc.toString(16)}`);
-
         let cpu = new CPU(this.preferredMemorySize > this.minimumRam ? this.preferredMemorySize : this.minimumRam);
         cpu.loader = this;
         cpu.loadCode(this.binary);

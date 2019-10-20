@@ -4,6 +4,10 @@ import {Library} from "../Library.js";
 export class libobjc extends Library {
     _objc_alloc() {
         alert("Oh hay there.");
+
+        // Call calloc
+        // this.cpu.call("_calloc");
+        // let obj_pointer = this.cpu.registers.reg("rdi");
     }
 }
 

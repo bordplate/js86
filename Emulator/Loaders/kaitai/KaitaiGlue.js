@@ -1,3 +1,7 @@
+/**
+ * This is just a helper class for loading the Kaitai libraries into the browser.
+ * Basically it justs adds script tags
+ */
 export class KaitaiGlue {
     static loadKaitai() {
         if (KaitaiGlue.prototype.loadedKaitai) {

@@ -20,6 +20,8 @@ export class CPU {
         this.memory = new Memory(memorySize);
         this.codeSize = 0x0;
 
+        this.loader = null;
+
         this.registers.setReg("RIP", 0x0);
         this.registers.setReg("RSP", memorySize);
 
@@ -141,10 +143,22 @@ export class CPU {
         }
     }
 
+    /**
+     * Adds given callback to stack of callbacks that will be called
+     *  when processor execution has ended.
+     *
+     * @param callback
+     */
     onEnd(callback) {
         this.onEndCallbacks.push(callback);
     }
 
+    /**
+     * Called when the processor ends execution.
+     * Calls alls callbacks added to stack previously.
+     *
+     * @param reason
+     */
     ended(reason) {
         this.onEndCallbacks.forEach((callback) => {
             callback(reason);
@@ -168,7 +182,7 @@ class InstructionHandler {
     /**
      * Horribly badly parses (mostly right-side) instruction ops.
      *
-     * Doesn't handle any arithmetic, cuz for a moment I forgot that was a thing.
+     * Handles simple arithmetics, but it's not tested very well.
      *
      * @param val Value to parse
      * @returns {{size: number, value: (number)}} <-- That
@@ -198,7 +212,7 @@ class InstructionHandler {
                     case "byte":  size = 0x1; break;
                 }
 
-                // Resolve address
+                // Resolve address and arithmetics.
                 let addressComponents = val.split("[")[1].split("]")[0].split(" ");
                 address = 0;
                 var operation = "+";
@@ -258,6 +272,10 @@ class InstructionHandler {
         }
     }
 
+    /**
+     * Load Effective Address, code mostly copied from `mov`, so it might be wrong
+     *  or otherwise weird.
+     */
     lea() {
         let sides = this.op_str.split(",");
         let left = sides[0].trim();
@@ -297,6 +315,9 @@ class InstructionHandler {
         }
     }
 
+    /**
+     * Jump not equal
+     */
     jne() {
         if (!this.cpu.registers.flag("ZF")) {
             this.jmp();
@@ -377,6 +398,9 @@ class InstructionHandler {
         ih.jmp();
     }
 
+    /**
+     * Subtract
+     */
     sub() {
         let components = this.op_str.split(",");
 
@@ -389,12 +413,15 @@ class InstructionHandler {
         this.cpu.registers.setFlag("SF", newValue < 0);
         this.cpu.registers.setFlag("CF", (register.value - right.value) > Math.pow(2, (register.size * 8)));
         this.cpu.registers.setFlag("PF", !(newValue % 2));
-        this.cpu.registers.setFlag("OF", register.value !== newValue + right.value || right.value !== -newValue + register.value)
+        this.cpu.registers.setFlag("OF", register.value !== newValue + right.value || right.value !== -newValue + register.value);
         // TODO: Set Auxiliary flag if relevant
 
         this.cpu.registers.setReg(register.name, newValue);
     }
 
+    /**
+     * Eh, add
+     */
     add() {
         let components = this.op_str.split(",");
 
@@ -407,7 +434,7 @@ class InstructionHandler {
         this.cpu.registers.setFlag("SF", newValue < 0);
         this.cpu.registers.setFlag("CF", (register.value + right.value) > Math.pow(2, (register.size * 8)));
         this.cpu.registers.setFlag("PF", !(newValue % 2));
-        this.cpu.registers.setFlag("OF", register.value !== newValue - right.value || right.value !== newValue - register.value)
+        this.cpu.registers.setFlag("OF", register.value !== newValue - right.value || right.value !== newValue - register.value);
         // TODO: Set Auxiliary flag if relevant
 
         this.cpu.registers.setReg(register.name, newValue);
@@ -438,7 +465,7 @@ class InstructionHandler {
             case 2: nativeFunction.getInput(); break;
             case 3: nativeFunction.exit(); break;
             case 4: nativeFunction.printf(); break;
-            case 5: nativeFunction.restart(); break;
+            case 5: nativeFunction.exit(true); break;
             case 6: nativeFunction.call(); break;
         }
     }
@@ -452,6 +479,11 @@ class NativeFunction {
         this.cpu = cpu;
     }
 
+    /**
+     * Writes string to ioBuffer.
+     *
+     * @register rdi Pointer to null terminated string to print.
+     */
     alert() {
         let memoryPointer = this.cpu.registers.reg("rdi");
 
@@ -460,9 +492,15 @@ class NativeFunction {
         message = message.substring(0, message.length);
 
         this.cpu.ioBuffer.output(message);
-        alert(message);
     }
 
+    /**
+     * Gets user input from ioBuffer and writes it to memory address from rdi.
+     * Max size of input specified in rsi.
+     *
+     * @register rdi Pointer to where input should be stored in memory
+     * @register rsi Maximum size of user input to store
+     */
     getInput() {
         let memoryPointer = this.cpu.registers.reg("rdi");
         let maxSize = this.cpu.registers.reg("rsi");
@@ -482,25 +520,25 @@ class NativeFunction {
         this.cpu.memory.store(memoryPointer, encoder.encode(input));
     }
 
+    /**
+     * Stops further CPU execution.
+     *
+     * @param restart if true, signals CPU to reset execution
+     */
     // TODO: Actually tear down CPU and stuff.
-    exit() {
+    exit(restart = false) {
         console.log("Instruction end");
         this.cpu.ioBuffer.output("Finished running program.");
         this.cpu.done = true;
 
-        this.cpu.ended("end");
-    }
-
-    restart() {
-        console.log("Instruction end");
-        this.cpu.ioBuffer.output("Finished running program.");
-        this.cpu.done = true;
-
-        this.cpu.ended("restart");
+        this.cpu.ended(restart ? "end" : "restart");
     }
 
     /**
-     * lol, we're cheating like crazy here
+     * Horrible implementation of (super) fake printf
+     *
+     * @register rdi Message (with format) to print
+     * @register rax Pointer to start of arguments (only actually supports 1 argument)
      */
     printf() {
         let formatPointer = this.cpu.registers.reg("rdi");
@@ -513,7 +551,11 @@ class NativeFunction {
     }
 
     /**
-     *
+     * Calls JavaScript function in specified library.
+     * Mostly used to jump from assembly in a dynamically loaded library
+     *  to a JavaScript counterpart. This allows us to implement library
+     *  functions in JavaScript which is easier to write and runs a little
+     *  faster than emulating instructions.
      */
     call() {
         let symbolNamePointer = this.cpu.registers.reg("rdi");
