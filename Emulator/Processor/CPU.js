@@ -100,8 +100,6 @@ export class CPU {
             return;
         }
 
-        this.doNotProgress = false;
-
         let instructionPointer = this.registers.reg("RIP");
 
         // Disassemble one instruction off memory
@@ -491,7 +489,7 @@ class InstructionHandler {
     int() {
         let value = this.parseValue(this.op_str);
 
-        let nativeFunction = new NativeFunction(this.cpu);
+        let nativeFunction = new NativeFunction(this.cpu, this);
 
         switch(value.value) {
             case 1: nativeFunction.alert(); break;
@@ -508,8 +506,9 @@ class InstructionHandler {
  * JavaScript functions that we tie into the emulator.
  */
 class NativeFunction {
-    constructor(cpu) {
+    constructor(cpu, ih) {
         this.cpu = cpu;
+        this.ih = ih;
     }
 
     /**
@@ -541,7 +540,11 @@ class NativeFunction {
         let input = this.cpu.ioBuffer.getNextInput();
 
         if (input === false) {
-            this.cpu.doNotProgress = true;
+            // Move instruction pointer back again and refuse to continue.
+            var instructionPointer = this.cpu.registers.reg("RIP");
+            instructionPointer -= this.ih.inst_size;
+            this.cpu.registers.setReg("rip", instructionPointer);
+
             return;
         }
 
