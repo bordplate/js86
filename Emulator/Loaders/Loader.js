@@ -18,6 +18,9 @@ export class Loader {
         this.codeStartOffset = 0;
         this.visualCodeSize = preferredMemorySize;
         this.vmOffset = 0;
+
+        this.symbols = {};
+        this.symbolList = [];
     }
 
     /**

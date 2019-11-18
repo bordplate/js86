@@ -144,6 +144,39 @@ export class CPU {
     }
 
     /**
+     * Calling a symbol and just running through it until it's done.
+     */
+    call(name) {
+        if (this.loader === null) {
+            return;
+        }
+
+        let address = this.loader.symbols[name];
+
+        let originalInstructionPointer = this.registers.reg("rip");
+
+        // Emulate pushing rip to stack so retuning works
+        let rsp = this.registers.reg("rsp") - 8;
+        this.registers.setReg("rsp", rsp);
+
+        let memValue = originalInstructionPointer.toString(16)
+            .padStart(8 * 2, "0")
+            .match(/.{1,2}/g)
+            .map((val) => {
+                    return parseInt(val, 16);
+                }
+            );
+
+        this.memory.store(rsp, memValue);
+
+        this.registers.setReg("rip", address);
+
+        while(this.registers.reg("rip") !== originalInstructionPointer) {
+            this.nextInstruction();
+        }
+    }
+
+    /**
      * Adds given callback to stack of callbacks that will be called
      *  when processor execution has ended.
      *
@@ -531,7 +564,7 @@ class NativeFunction {
         this.cpu.ioBuffer.output("Finished running program.");
         this.cpu.done = true;
 
-        this.cpu.ended(restart ? "end" : "restart");
+        this.cpu.ended(restart ? "restart" : "end");
     }
 
     /**

@@ -12,11 +12,11 @@
 </head>
     <body style="display:grid;">
         <cpu-emulator
-                cpu-binary="binaries/macho"
+                cpu-binary="Emulator/Libraries/macOS/binaries/simple_macho"
                 memory-size="0x10000"
-                code-size="dynamic"
+                code-size="0x2000"
                 stack-watch="dynamic"
-                run-speed="0"
+                run-speed="1"
                 loader="MachO"
                 watched-registers="rip,rsp,rax,rdi"
                 show-console="true">

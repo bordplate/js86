@@ -16,6 +16,8 @@ export class RawLoader extends Loader {
         this.cpu.loadCode(this.binary);
         this.cpu.loader = this;
 
+        this.visualCodeSize = this.binary.length;
+
         return this.cpu;
     }
 }

@@ -23,13 +23,22 @@ export class CpuAssembly extends HTMLElement {
             }
         });
 
-        document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`).classList.add("current-line");
+        try {
+            document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`).classList.add("current-line");
+        } catch (exception) {
+            // Ignore the shit out of that
+        }
     }
 
     loadAssembly(assembly, loader) {
         let metadata = new Metadata(assembly, loader);
         metadata.analyze();
 
+        if (this.codeSize === false) {
+            this.codeSize = metadata.codeSize;
+        }
+
+        var processedFirstLine = false;  // If we're processing the first line of the code, the label shouldn't be large
         this.innerHTML = assembly.flatMap((instruction) => {
             if (parseInt(instruction[0], 16) > this.codeSize) {
                 return;
@@ -42,14 +51,12 @@ export class CpuAssembly extends HTMLElement {
             let addressMetadata = metadata.informationForAddress(instruction[0]);
 
             if (addressMetadata !== undefined) {
-                let isEntrypoint = !!(addressMetadata.entrypoint);
-
                 if (addressMetadata.label) {
                     html += `
                     <div tabindex="-30" role="row" class="label">
                         <span class="address"></span>
                         <span class="arrow"></span>
-                        <span class="${isEntrypoint ? "label-entrypoint" : "label-name"}">${addressMetadata.labelName}:</span>
+                        <span class="${processedFirstLine ? "label-name" : "label-entrypoint"}">${addressMetadata.labelName}:</span>
                         <span class="op_str"></span>
                     </div>`;
                 }
@@ -66,6 +73,8 @@ export class CpuAssembly extends HTMLElement {
                             <span class="mnemonic">${instruction[1]}</span>&#9;&#9;
                             <span class="op_str">${op_str}</span>
                         </div>`;
+
+            processedFirstLine = true;
 
             return html;
         }).join('\n');

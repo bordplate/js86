@@ -20,6 +20,10 @@ export class Memory {
         this.subscribers.push(callback);
     }
 
+    size() {
+        return this.memory.length;
+    }
+
     notify() {
         this.subscribers.forEach((subscriber) => {
             subscriber();

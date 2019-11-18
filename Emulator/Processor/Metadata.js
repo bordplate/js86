@@ -35,7 +35,8 @@ export class Metadata {
             'RSP', 'ESP', 'SP', 'SPL',
             'RBP', 'EBP', 'BP', 'BPL',
             'RIP', 'EIP', 'IP',
-            'RDI', 'EDI', 'DI'
+            'RDI', 'EDI', 'DI',
+            "R14"
         ];
     }
 
@@ -46,11 +47,35 @@ export class Metadata {
         }).pop();
     }
 
+    symbolName(address) {
+        if (!this.loader) {
+            return false;
+        }
+
+        for (var i = 0; i <= this.loader.symbolList.length; i++) {
+            let symbol = this.loader.symbolList[i];
+
+            if (symbol === undefined) {
+                continue;
+            }
+
+            if (symbol.address === address) {
+                return symbol;
+            }
+        }
+
+        return false;
+    }
+
     /**
      *
      * @returns {boolean}
      */
     analyze() {
+        if (this.loader.visualCodeSize > 0) {
+            this.codeSize = this.loader.visualCodeSize;
+        }
+
         this.assembly.forEach((instruction) => {
             let [address, mnemonic, op_str] = instruction;
             address = parseInt(address, 16);
@@ -82,14 +107,23 @@ export class Metadata {
                 return op_str;
             });
 
+            // Sets label for entrypoint
             if (address === this.loader.entrypoint) {
                 addressInformation.label = true;
                 addressInformation.labelName = "entrypoint";
                 addressInformation.entrypoint = true;
             }
 
+            // Sets label for symbols defined in binary (only applicable if using loaders, raw binaries do not have symbols)
+            let symbol = this.symbolName(address);
+            if (symbol !== false) {
+                addressInformation.label = true;
+                addressInformation.labelName = symbol.name;
+                addressInformation.hasSymbol = true;
+            }
 
-
+            // Sets a label name for an address if the current mnemonic is some sort of jump instruction
+            //   and there is no symbol name defined for this address.
             if (Metadata.isJumpInstruction(mnemonic)) {
                 let destination = parseInt(op_str, 16);
 
@@ -97,8 +131,17 @@ export class Metadata {
                     this.addressInformation[destination.toString(16)] :
                     {};
 
-                destinationAddressInformation.label = true;
-                destinationAddressInformation.labelName = `loc_${destination.toString(16)}`;
+                if (!destinationAddressInformation.label) {
+                    destinationAddressInformation.label = true;
+
+                    // See if there might be a symbol at this address
+                    let symbol = this.symbolName(destination);
+                    if (symbol !== false) {
+                        destinationAddressInformation.labelName = symbol.name;
+                    } else {
+                        destinationAddressInformation.labelName = `loc_${destination.toString(16)}`;
+                    }
+                }
 
                 addressInformation.processOpStr = this.processOpStr;
                 addressInformation.opStrFunctions = addressInformation.opStrFunctions instanceof Array ?
@@ -120,7 +163,9 @@ export class Metadata {
 
                 components.forEach((component) => {
                     if (parseInt(component)) {
-                        op_str = op_str.replace(component, `<span class="op_str-number">${component}</span>`);
+                        // Hack for int values where int is surrounded by [ and ] (for memload operations)
+                        let comp = component.replace("[", "").replace("]","");
+                        op_str = op_str.replace(comp, `<span class="op_str-number">${comp}</span>`);
                     }
                 });
 
