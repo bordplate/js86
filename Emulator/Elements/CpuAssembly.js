@@ -86,6 +86,8 @@ export class CpuAssembly extends HTMLElement {
     }
 
     addBreakpoint(instruction) {
+        return;  // Disabled because it doesn't actually do anything
+
         let item = document.getElementById(`${this.uniqueName}-line-0x${instruction}`);
 
         item.classList.add("breakpoint")
