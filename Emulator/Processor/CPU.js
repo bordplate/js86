@@ -86,7 +86,7 @@ export class CPU {
 
         // TODO: Could like flatMap or whatever? I use maps way too little :(
         instructions.forEach((instruction) => {
-            disassembled.push([instruction.address.toString(16), instruction.mnemonic, instruction.op_str]);
+            disassembled.push([instruction.address.toString(16), instruction.mnemonic, instruction.op_str, instruction.size]);
         });
 
         return disassembled;

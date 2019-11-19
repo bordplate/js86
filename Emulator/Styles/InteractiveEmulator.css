@@ -28,7 +28,7 @@ cpu-emulator {
     white-space:normal;
     z-index:auto;
 
-    width: 800px;
+    width: 850px;
     display: block;
 }
 
@@ -145,7 +145,7 @@ cpu-emulator {
 
 cpu-assembly {
     font-family: monospace;
-    width: 300px;
+    width: 350px;
     display: flex;
     flex-direction: column;
     order: 3;

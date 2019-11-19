@@ -42,7 +42,29 @@ export class Metadata {
 
     processOpStr(op_str) {
         return this.opStrFunctions.map((func) => {
-            op_str = func(op_str);
+            // We've got to make sure we don't process things multiple times, otherwise weird things happen
+            //  in the UI.
+            // So we parse the HTML and avoid processing things where there is already an HTML node.
+            let element = document.createElement("span");
+            element.innerHTML = op_str;
+
+            element.childNodes.forEach((node) => {
+                if (!node.hasChildNodes()) {
+                    var newElement = document.createElement("span");
+                    newElement.innerHTML = func(node.textContent);
+
+                    let nextSibling = node.nextSibling;
+
+                    element.replaceChild(newElement.childNodes[0], node);
+
+                    while (newElement.childNodes.length > 0) {
+                        element.insertBefore(newElement.childNodes[0], nextSibling);
+                    }
+                }
+            });
+
+            op_str = element.innerHTML;
+
             return op_str;
         }).pop();
     }
@@ -77,31 +99,46 @@ export class Metadata {
         }
 
         this.assembly.forEach((instruction) => {
-            let [address, mnemonic, op_str] = instruction;
+            let [address, mnemonic, op_str, size] = instruction;
             address = parseInt(address, 16);
 
             let addressInformation = this.addressInformation[address.toString(16)] !== undefined ?
                 this.addressInformation[address.toString(16)] :
                 {};
 
+
             addressInformation.processOpStr = this.processOpStr;
             addressInformation.opStrFunctions = addressInformation.opStrFunctions instanceof Array ?
                 addressInformation.opStrFunctions :
                 [];
 
+            addressInformation.processedStrings = addressInformation.processedStrings instanceof Array ?
+                addressInformation.processedStrings :
+                [];
+
+            // Push processing function that processes and styles all registers
+            // When this is the first function in the opStrFunctions array, it will fire last
             addressInformation.opStrFunctions.push((op_str) => {
                 Metadata.registerNames().forEach((registerName) => {
-                    op_str = op_str.replace(
-                        registerName.toLowerCase(),
-                        registerName.toUpperCase()
-                    )
+                    let occurences = op_str.split(registerName.toLowerCase()).length - 1;
+
+                    for (var i = 0; i <= occurences; i++) {
+                        op_str = op_str.replace(
+                            registerName.toLowerCase(),
+                            registerName.toUpperCase()
+                        )
+                    }
                 });
 
                 Metadata.registerNames().forEach((registerName) => {
-                    op_str = op_str.replace(
-                        registerName.toUpperCase(),
-                        `<span class="op_str-register">${registerName.toLowerCase()}</span>`
-                    )
+                    let occurences = op_str.split(registerName).length - 1;
+
+                    for (var i = 0; i <= occurences; i++) {
+                        op_str = op_str.replace(
+                            registerName.toUpperCase(),
+                            `<span class="op_str-register">${registerName.toLowerCase()}</span>`
+                        )
+                    }
                 });
 
                 return op_str;
@@ -168,6 +205,34 @@ export class Metadata {
                         op_str = op_str.replace(comp, `<span class="op_str-number">${comp}</span>`);
                     }
                 });
+
+                return op_str;
+            });
+
+            // Resolve label for data resources like strings and objects
+            addressInformation.opStrFunctions.unshift((op_str) => {
+                let components = op_str.split("[");
+                if (components.length > 1) {
+                    let addressStr = components.slice(-1)[0].split("]")[0];
+                    var addr = 0;
+
+                    // We'll just cheat with the RIP relative addressing
+                    if (addressStr.startsWith("rip + ")) {
+                        addr = address + size + parseInt(addressStr.split(" ").slice(-1)[0], 16);
+                    } else {
+                        addr = parseInt(addressStr, 16);
+                    }
+
+                    let symbol = this.symbolName(addr);
+                    if (symbol !== false) {
+                        let str = `<span class="op_str-label">${symbol.name}</span>`;
+
+                        // Stops other code from trying to process the same string again
+                        addressInformation.processedStrings.push(str);
+
+                        op_str = op_str.replace(addressStr, str);
+                    }
+                }
 
                 return op_str;
             });
