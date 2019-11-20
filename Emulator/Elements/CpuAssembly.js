@@ -59,7 +59,7 @@ export class CpuAssembly extends HTMLElement {
         let metadata = new Metadata(assembly, loader);
         metadata.analyze();
 
-        if (this.codeSize === false) {
+        if (isNaN(this.codeSize)) {
             this.codeSize = metadata.codeSize;
         }
 
