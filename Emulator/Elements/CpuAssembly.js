@@ -60,7 +60,7 @@ export class CpuAssembly extends HTMLElement {
         metadata.analyze();
 
         if (isNaN(this.codeSize)) {
-            this.codeSize = metadata.codeSize;
+            this.codeSize = metadata.codeSize + parseInt(assembly[0][0], 16);
         }
 
         var processedFirstLine = false;  // If we're processing the first line of the code, the label shouldn't be large
