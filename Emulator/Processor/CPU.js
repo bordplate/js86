@@ -94,6 +94,8 @@ export class CPU {
 
     /**
      * Steps through the code.
+     *
+     * @return instruction pointer to next instruction
      */
     nextInstruction() {
         if (this.done === true) {
@@ -139,6 +141,8 @@ export class CPU {
             case "cmp": ih.cmp(); break;
             default: throw new CPUError(`Unknown mnemonic: ${instruction.mnemonic}`);
         }
+
+        return this.registers.reg("RIP");;
     }
 
     /**

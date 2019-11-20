@@ -84,25 +84,17 @@ export class CpuEmulator extends HTMLElement {
 
             // Support for custom loaders (ELFs, PEs, MachOs, etc)
             let loaderName = this.loaderName + "Loader";
-            //try {
-                var loaderModule = await import(`../Loaders/${loaderName}.js`);
 
-                this.loader = new loaderModule[loaderName](this.memorySize);
-                await this.loader.loadBinary(binary);
+            var loaderModule = await import(`../Loaders/${loaderName}.js`);
 
-                this.cpu = this.loader.getCPU();
+            this.loader = new loaderModule[loaderName](this.memorySize);
+            await this.loader.loadBinary(binary);
 
-                console.log("Loaded CPU.");
+            this.cpu = this.loader.getCPU();
 
-                this.onCPULoad();
-            /*} catch (exception) {
-                if (exception instanceof TypeError) {
-                    //alert("Could not import loader with name: " + loaderName);
-                    console.log("Could not import loader with name: " + loaderName);
-                } else {
-                    console.log(exception.message);
-                }
-            }*/
+            console.log("Loaded CPU.");
+
+            this.onCPULoad();
         });
     }
 
@@ -198,8 +190,18 @@ export class CpuEmulator extends HTMLElement {
         }
     }
 
+    /**
+     * Single-steps CPU
+     *
+     * If the next instruction is outside of what is shown in assembly view, it keeps stepping until we are back
+     *  into the assembly view, or the emulator stops.
+     */
     stepCPU() {
-        this.cpu.nextInstruction();
+        let instructionPointer = this.cpu.nextInstruction();
+
+        if (!this.assemblyView.isAddressInView(instructionPointer) && !this.cpu.done) {
+            this.stepCPU();
+        }
     }
 
     resetCPU() {
@@ -209,19 +211,25 @@ export class CpuEmulator extends HTMLElement {
         clearInterval(this.runInterval);
         this.consoleView.clear();
 
-        CpuEmulator.loadBinary(this.binaryPath, (binary) => {
+        CpuEmulator.loadBinary(this.binaryPath, async (binary) => {
             var hexDump = "";
             binary.forEach((byte) => {
                 hexDump += byte.toString(16).padStart(2, "0") + " ";
             });
 
-            console.log("Loading code: ");
-            console.log(hexDump);
+            console.log("Loading CPU.");
 
-            this.cpu = new CPU(this.memorySize);
-            this.cpu.loadCode(binary);
+            // Support for custom loaders (ELFs, PEs, MachOs, etc)
+            let loaderName = this.loaderName + "Loader";
 
-            console.log("Loaded CPU. Disassembly: \n" + this.cpu.fullDisassembledCode().join("\n"));
+            var loaderModule = await import(`../Loaders/${loaderName}.js`);
+
+            this.loader = new loaderModule[loaderName](this.memorySize);
+            await this.loader.loadBinary(binary);
+
+            this.cpu = this.loader.getCPU();
+
+            console.log("Loaded CPU.");
 
             this.onCPULoad();
         });

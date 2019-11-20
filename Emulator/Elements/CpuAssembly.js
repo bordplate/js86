@@ -30,7 +30,32 @@ export class CpuAssembly extends HTMLElement {
         }
     }
 
+    /**
+     * Wether or not the specified address is in the assembly view.
+     *
+     * @param address
+     * @returns {boolean}
+     */
+    isAddressInView(address) {
+        var isInView = false;
+
+        for (var i = 0; i < this.assembly.length; i++) {
+            let instruction = this.assembly[i];
+
+            let instructionAddress = parseInt(instruction[0], 16);
+
+            if (instructionAddress === address) {
+                isInView = true;
+                break;
+            }
+        }
+
+        return isInView && address <= this.codeSize;
+    }
+
     loadAssembly(assembly, loader) {
+        this.assembly = assembly;
+
         let metadata = new Metadata(assembly, loader);
         metadata.analyze();
 
