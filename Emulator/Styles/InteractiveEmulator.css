@@ -249,13 +249,13 @@ cpu-assembly div:nth-child(2n) {
 /** Registers **/
 
 cpu-registers {
-    display: grid;
-    grid-template-columns: auto auto auto;
+    display: flex;
+    flex-wrap: wrap;
     font-family: monospace;
     font-size: 18px;
-    margin-left: 10px;
+    margin-top: 5px;
     margin-bottom: 10px;
-    width: 400px;
+    width: 500px;
 }
 
 cpu-register {
