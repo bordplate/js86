@@ -6,7 +6,7 @@ It is important to note that this emulator only implements a very limited subset
 support conditional branching of any kind just yet. 
 
 ## Binary formats and compilation
-The compiler has simple support for [Mach-O binaries](https://en.wikipedia.org/wiki/Mach-O) (but not FAT archives) and raw binary files.
+The emulator has simple support for [Mach-O binaries](https://en.wikipedia.org/wiki/Mach-O) (but not FAT archives) and raw binary files.
 
 ### Raw binaries
 Compile raw binaries with `nasm -f bin <filename>`.
