@@ -199,7 +199,7 @@ export class CpuEmulator extends HTMLElement {
     stepCPU() {
         let instructionPointer = this.cpu.nextInstruction();
 
-        if (!this.assemblyView.isAddressInView(instructionPointer) && !this.cpu.done) {
+        if (!this.assemblyView.isAddressInView(instructionPointer) && !this.cpu.done && !this.cpu.ioWait) {
             this.stepCPU();
         }
     }

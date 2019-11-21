@@ -27,6 +27,8 @@ export class CPU {
 
         this.onEndCallbacks = [];
 
+        this.ioWait = false;  // If true indicates the CPU is waiting for IO.
+
         // Initializes the Capstone engine. Is used throughout the "CPU"
         // It's just easier to emulate based on simple mnemonics rather than opcodes.
         this.disassembler = new cs.Capstone(cs.ARCH_X86, cs.MODE_64);
@@ -544,6 +546,8 @@ class NativeFunction {
         let input = this.cpu.ioBuffer.getNextInput();
 
         if (input === false) {
+            this.cpu.ioWait = true;
+
             // Move instruction pointer back again and refuse to continue.
             var instructionPointer = this.cpu.registers.reg("RIP");
             instructionPointer -= this.ih.inst_size;
@@ -551,6 +555,8 @@ class NativeFunction {
 
             return;
         }
+
+        this.cpu.ioWait = false;
 
         if (input.length > maxSize) {
             input = input.substr(0, maxSize);

@@ -78,7 +78,7 @@ export class CpuAssembly extends HTMLElement {
             if (addressMetadata !== undefined) {
                 if (addressMetadata.label) {
                     html += `
-                    <div tabindex="-30" role="row" class="label">
+                    <div tabindex="-30" role="row" class="code-label">
                         <span class="address"></span>
                         <span class="arrow"></span>
                         <span class="${processedFirstLine ? "label-name" : "label-entrypoint"}">${addressMetadata.labelName}:</span>

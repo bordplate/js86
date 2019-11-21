@@ -216,7 +216,7 @@ cpu-assembly div:nth-child(2n) {
     color: black;
 }
 
-.label {
+.code-label {
     display: flex;
 }
 
