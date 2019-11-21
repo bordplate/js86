@@ -153,8 +153,6 @@ export class MachOLoader extends Loader {
             return;
         }
 
-        console.log(KaitaiStream);
-
         // Process load commands.
         // I don't think load commands should need to be in a particular order,
         //  but segments will definitely be way off if they're in a weird order in the binary.
