@@ -14,7 +14,9 @@ export class KaitaiGlue {
         script.async = "true";
         document.head.appendChild(script);
 
-        KaitaiGlue.prototype.loadedKaitai = true;
+        document.loadedKaitai = () => {
+            KaitaiGlue.prototype.loadedKaitai = true;
+        };
     }
 
     static load(name) {
@@ -28,7 +30,10 @@ export class KaitaiGlue {
         script.async = "true";
         document.head.appendChild(script);
 
-        KaitaiGlue.prototype.loaded[name] = true;
+        document.loadedKaitaiType = (name) => {
+            KaitaiGlue.prototype.loaded[name] = true;
+        };
+
     }
 }
 

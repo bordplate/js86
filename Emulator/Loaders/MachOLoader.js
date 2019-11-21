@@ -135,13 +135,25 @@ export class MachOLoader extends Loader {
         this.masterLoader = this.masterLoader === null ? this : this.masterLoader;
 
         // Wait for Kaitai Mach-O class to load.
-        while(typeof MachO === "undefined") {
+        while(typeof MachO === "undefined" || typeof KaitaiStream === "undefined" || KaitaiGlue.prototype.loaded["MachO"] !== true) {
             await this.sleep(100);
         }
 
         this.binary = binary;
 
-        this.macho = new MachO(new KaitaiStream(binary));
+        try {
+            this.macho = new MachO(new KaitaiStream(binary));
+        } catch (TypeError) {
+            if (!document.failedLoadingLoaderBullshit) {
+                document.failedLoadingLoaderBullshit = true;
+
+                alert("A component for the emulator was not loaded properly. Refresh your browser to retry.");
+            }
+
+            return;
+        }
+
+        console.log(KaitaiStream);
 
         // Process load commands.
         // I don't think load commands should need to be in a particular order,

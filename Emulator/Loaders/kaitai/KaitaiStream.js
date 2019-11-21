@@ -734,3 +734,5 @@
     return KaitaiStream;
 
 }));
+
+document.loadedKaitai();

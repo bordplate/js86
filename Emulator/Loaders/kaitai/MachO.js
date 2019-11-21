@@ -8,6 +8,8 @@
     } else {
         root.MachO = factory(root.KaitaiStream);
     }
+
+    document.loadedKaitaiType("MachO");
 }(this, function (KaitaiStream) {
     var MachO = (function() {
         MachO.LoadCommandType = Object.freeze({
