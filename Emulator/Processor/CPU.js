@@ -141,6 +141,7 @@ export class CPU {
             case "je": ih.je(); break;
             case "jne": ih.jne(); break;
             case "cmp": ih.cmp(); break;
+            case "nop": break;
             default: throw new CPUError(`Unknown mnemonic: ${instruction.mnemonic}`);
         }
 
