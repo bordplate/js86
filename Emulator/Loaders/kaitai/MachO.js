@@ -2252,11 +2252,10 @@
                     this._read();
                 }
                 StrTable.prototype._read = function() {
-                    this.unknown = this._io.readU2le();
                     this.items = []
                     var i = 0;
                     do {
-                        var _ = KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, true), "ascii");
+                        var _ = KaitaiStream.bytesToStr(this._io.readBytesTerm(0, false, true, false), "ascii");
                         this.items.push(_);
                         i++;
                     } while (!(_ == ""));

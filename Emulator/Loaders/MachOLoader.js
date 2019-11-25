@@ -68,6 +68,8 @@ export class MachOLoader extends Loader {
         console.log(`Loading ${symbol} into 0x${localAddress.toString(16)} from 0x${dylibAddress.toString(16)} in ${dylib.loader.name}`);
         console.log(`\tIntended file offset: ${(dylib.loader.machoSymbols[symbol].value).toString(16)}`)
 
+        this.masterLoader.symbolList.push({name: symbol, address: localAddress, type: "text"});
+
         let addressValue = dylibAddress.toString(16)
             .padStart(8 * 2, "0")
             .match(/.{1,2}/g)
@@ -178,6 +180,10 @@ export class MachOLoader extends Loader {
                         this.codeStartOffset = section.offset;
                         this.visualCodeSize = section.size;
                     }
+
+                    if (section.sectName === "__stubs") {
+                        this.visualCodeSize += section.size;
+                    }
                 });
 
                 // TODO: Load memory protections in segments (rwx, etc) when CPU supports that.
@@ -194,8 +200,12 @@ export class MachOLoader extends Loader {
                     return symbol !== undefined && symbol.un !== 1;  // We should ignore these
                 });
 
-                loadCommand.body.strs.items.forEach((name, i) => {
-                    if (name === "" || sortedSymbols[i] === undefined) {
+                let sanitizedSymbolNames = loadCommand.body.strs.items.filter((name) => {
+                    return name !== " ";  // Very annoying. I believe this is a bug in the MachO-parser, but who knows
+                });
+
+                sanitizedSymbolNames.forEach((name, i) => {
+                    if (sortedSymbols[i] === undefined) {
                         return;
                     }
 
@@ -386,7 +396,15 @@ export class MachOLoader extends Loader {
      *
      */
     generateSymbolList() {
-        this.symbolList = Object.keys(this.machoSymbols).map((key) => {
+        for (var i = 0; i < this.libraries.length; i++) {
+            let loader = this.libraries[i].loader;
+
+            loader.generateSymbolList();
+
+            this.symbolList = this.symbolList.concat(loader.symbolList);
+        }
+
+        this.symbolList = this.symbolList.concat(Object.keys(this.machoSymbols).map((key) => {
             if(!this.machoSymbols.hasOwnProperty(key) || key === "") {
                 return;
             }
@@ -419,16 +437,16 @@ export class MachOLoader extends Loader {
 
             // External symbol
             // We've already resolved this
-            if ((sym.type & 0x1) === 0x1) {
+            if ((sym.type & 0x1) === 0x1 && this.symbols[key] !== undefined) {
                 address = this.symbols[key]
             }
 
             return {
                 name: key,
                 type: type,
-                address: address
+                address: address + this.binaryOffset
             };
-        }); // Fake local symbols
+        })); // Fake local symbols
     }
 
     /**

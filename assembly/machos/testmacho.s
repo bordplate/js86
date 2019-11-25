@@ -5,7 +5,6 @@ section .text
 global main
 
 main:
-    xor eax, eax
     mov rdi, [RAX + 0x10]
     lea rdi, [rel msg]
     call printf

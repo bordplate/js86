@@ -51,4 +51,5 @@ Because of the Capstone library dependency it has been impossible for me to find
 [Capstone](http://www.capstone-engine.org)  
 [Capstone.js](https://github.com/AlexAltea/capstone.js) by [Alexandro Sanchez](https://github.com/AlexAltea)  
 [node-int64](https://github.com/broofa/node-int64) by [Robert Kieffer](https://github.com/broofa)  
-[Pretty CSS buttons](https://codepen.io/derekmorash/) by Derek Morash
+[Pretty CSS buttons](https://codepen.io/derekmorash/) by Derek Morash  
+[js-struct](https://github.com/andrewimm/js-struct) by [andrewimm](https://github.com/andrewimm)

@@ -188,7 +188,7 @@ export class Int64 {
      * represented to integer precision.
      */
     valueOf() {
-        return this.toNumber(false);
+        return this.toNumber(true);
     }
 
     /**

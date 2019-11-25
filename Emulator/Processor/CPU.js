@@ -138,6 +138,7 @@ export class CPU {
             case "int": ih.int(); break;
             case "sub": ih.sub(); break;
             case "add": ih.add(); break;
+            case "idiv": ih.idiv(); break;
             case "je": ih.je(); break;
             case "jne": ih.jne(); break;
             case "cmp": ih.cmp(); break;
@@ -156,7 +157,26 @@ export class CPU {
             return;
         }
 
-        let address = this.loader.symbols[name];
+        var address = this.loader.symbols[name];
+
+        if (address === undefined) {
+            // Attempt to fall back to different symbol list
+            var symbol = undefined;
+
+            for (var i = 0; i < this.loader.symbolList.length; i++) {
+                if (this.loader.symbolList[i].name === name) {
+                    symbol = this.loader.symbolList[i];
+
+                    break;
+                }
+            }
+
+            if (symbol === undefined) {
+                throw new CPUError("Could resolve address for symbol with name `" + name + "`");
+            }
+
+            address = symbol.address;
+        }
 
         let originalInstructionPointer = this.registers.reg("rip");
 
@@ -279,8 +299,8 @@ class InstructionHandler {
                 valueSize = size;
             } else { // Assume val is a register
                 name = val;
-                value = this.cpu.registers.reg(val);
-                valueSize = this.cpu.registers.regByteLen(val);
+                value = this.cpu.registers.reg(val.trim());
+                valueSize = this.cpu.registers.regByteLen(val.trim());
             }
         } else {
             value = parseInt(val);
@@ -476,6 +496,27 @@ class InstructionHandler {
         // TODO: Set Auxiliary flag if relevant
 
         this.cpu.registers.setReg(register.name, newValue);
+    }
+
+    idiv() {
+        let components = this.op_str.split(",");
+
+        let dividend = this.cpu.registers.reg("rax");
+        let divisor = this.parseValue(components[0]);
+        let newValue = Math.floor((dividend / divisor.value) % Math.pow(2, (divisor.size * 8)));
+
+        // Set relevant flags
+        this.cpu.registers.setFlag("ZF", newValue === 0);
+        this.cpu.registers.setFlag("SF", newValue < 0);
+        this.cpu.registers.setFlag("CF", Math.floor((dividend / divisor.value) > Math.pow(2, (divisor.size * 8))));
+        this.cpu.registers.setFlag("PF", !(newValue % 2));
+
+        // No idea if this flag is being set correctly because idk how it works tbh
+        this.cpu.registers.setFlag("OF", divisor.value !== newValue - dividend || dividend !== newValue - divisor.value);
+        // TODO: Set Auxiliary flag if relevant
+
+        this.cpu.registers.setReg("rax", newValue);
+        this.cpu.registers.setReg("rdx", dividend % divisor.value);
     }
 
     /**
