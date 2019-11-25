@@ -178,6 +178,21 @@ export class libSystem extends Library {
 
         this.cpu.registers.setReg("rax", pointer);
     }
+
+    _strncmp() {
+        let str1_ptr = this.cpu.registers.reg("rdi");
+        let str2_ptr = this.cpu.registers.reg("rsi");
+        let num = this.cpu.registers.reg("rdx");
+
+        let str1 = this.cpu.memory.loadString(str1_ptr, "\0").slice(0, num);
+        let str2 = this.cpu.memory.loadString(str2_ptr, "\0").slice(0, num);
+
+        if (str1 === str2) {
+            this.cpu.registers.setReg("rax", 0);
+        } else {
+            this.cpu.registers.setReg("rax", 1);
+        }
+    }
 }
 
 MachOLoader.addLibraryAlias(

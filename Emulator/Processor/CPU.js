@@ -654,6 +654,10 @@ class NativeFunction {
 
         let library = new (Loader.getLibrary(libraryName))(this.cpu);
 
+        // Pop rax and rdi out of the stack
+        new InstructionHandler(this.cpu, "rax").pop();
+        new InstructionHandler(this.cpu, "rdi").pop();
+
         library[symbolName]();
     }
 }

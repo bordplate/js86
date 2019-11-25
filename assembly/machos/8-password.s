@@ -4,9 +4,11 @@ section .data
 
 password_ptr: db "What in the fuck?",0
 
-booting_msg: db "Booting system...",0
-dot_msg: db ".", 0
-welcome_msg: db 0x0a,"Welcome to SECSYS3000!",0x0a,0
+booting_msg: db "Booting system...",0x0a,0
+welcome_msg: db "Welcome to SECSYS3000!",0
+enter_pass_msg: db 0x0a,"Please enter your password: ",0
+loggedin_msg: db "Successfully logged in!",0x0a,0
+wrong_pass_msg: db "Wrong password!",0x0a,0
 
 section .text
 
@@ -16,12 +18,39 @@ main:
     call boot_up
     call exit
 
+say_success:
+    lea rdi, [rel loggedin_msg]
+    call print
+    call exit
+
+say_wrong:
+    lea rdi, [rel wrong_pass_msg]
+    call print
+
+enter_password:
+    lea rdi, [rel enter_pass_msg]
+    call print
+    sub rsp, 0x10
+    mov rdi, rsp
+    mov rsi, 0x20
+    call read
+    lea rsi, [rel password_ptr]
+    mov rsi, [rsi]
+    mov rdx, 0x10
+    call strncmp
+    add rsp, 0x10
+    cmp rax, 0
+    je say_success
+    jmp say_wrong
+    ret
+
 boot_up:
     lea rdi, [rel booting_msg]
     call print
     call integrity_check
     lea rdi, [rel welcome_msg]
     call print
+    call enter_password
     ret
 
 integrity_check:
@@ -33,6 +62,7 @@ integrity_check:
     call create_random_password
     lea rax, [rel password_ptr]
     mov [rax], rdi
+    call print
     pop rdi
     ret
 
@@ -58,6 +88,7 @@ create_random_password:
     ret
 
 read:
+
     int 2
     ret
 
@@ -72,9 +103,14 @@ printf:
 exit:
     int 3
 
+strncmp:
+    call _strncmp
+    ret
+
 malloc:
     call _malloc
     ret
 
 extern _malloc
 extern _rand
+extern _strncmp

@@ -46,14 +46,18 @@ export class IOBuffer {
     }
 
     getNextInput() {
+        let input = this.inputBuffer.split("\n").slice(0, this.inputIndex+1);
+
         if (
             (this.inputIndex > this.inputBuffer.split("\n").length - 1) ||
-            (this.inputBuffer.split("\n").length === 1 && this.inputBuffer.split("\n")[0] === "")
+            (input[input.length - 1] === "")
         ) {
             return false;
         }
 
-        return this.inputBuffer.split("\n")[this.inputIndex++];
+        this.inputIndex++;
+
+        return input[input.length - 1];
     }
 
     input(text) {

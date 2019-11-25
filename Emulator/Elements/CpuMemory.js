@@ -6,16 +6,25 @@ export class CpuMemory extends HTMLElement {
     }
 
     setMemory(memory) {
+        if (memory.length <= 0) {
+            return;
+        }
+
         this.innerHTML = "";
 
-        for (var i = this.memorySize - memory.length; i < memory.length; i++) {
+        var html = "";
+
+        for (var i = 0; i < memory.length; i++) {
             let byte = memory[i];
-            this.innerHTML += `
+            let address = this.memorySize - memory.length + i;
+            html += `
                             <div class='byte'>
-                                <span class="mem-address">${i.toString(16)}</span>
+                                <span class="mem-address">${address.toString(16)}</span>
                                 <span class="ascii-byte">${String.fromCharCode(byte)}</span>
                                 <span class="hex-byte">${byte.toString(16).padStart(2, "0")}</span>
                             </div>`;
         }
+
+        this.innerHTML = html;
     }
 }

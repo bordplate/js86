@@ -2,6 +2,7 @@ BITS 64
 
 section .data
 
+_strncmp_name: db "_strncmp",0
 _calloc_name: db "_calloc",0
 _malloc_name: db "_malloc",0
 _rand_name: db "_rand",0
@@ -32,18 +33,26 @@ _calloc:
 ; returns pointer to memory in rax
 _malloc:
     push rdi
+    push rax
     lea rdi, [rel _malloc_name]
     lea rax, [rel framework_name]
     int 6
-    pop rdi
     ret
 
 _rand:
     push rdi
+    push rax
     lea rdi, [rel _rand_name]
     lea rax, [rel framework_name]
     int 6
-    pop rdi
+    ret
+
+_strncmp:
+    push rdi
+    push rax
+    lea rdi, [rel _strncmp_name]
+    lea rax, [rel framework_name]
+    int 6
     ret
 
 __get_heap_start_ptr:
@@ -62,5 +71,6 @@ global _rand
 global _calloc
 global dyld_stub_binder
 global _malloc
+global _strncmp
 global __get_heap_start_ptr
 global __get_heap_end_ptr
