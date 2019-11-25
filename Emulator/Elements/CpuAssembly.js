@@ -12,6 +12,10 @@ export class CpuAssembly extends HTMLElement {
     }
 
     setCurrentLine(lineNum) {
+        if (!this.isAddressInView(lineNum)) {
+            return;  // Ignore
+        }
+
         let hexedValue = `0x${lineNum.toString(16).toUpperCase()}`;
         var allLines = this.getElementsByClassName('code-line');
 

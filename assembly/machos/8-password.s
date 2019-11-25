@@ -4,7 +4,7 @@ section .data
 
 password_ptr: db "What in the fuck?",0
 
-booting_msg: db "Booting system",0
+booting_msg: db "Booting system...",0
 dot_msg: db ".", 0
 welcome_msg: db 0x0a,"Welcome to SECSYS3000!",0x0a,0
 
@@ -50,8 +50,6 @@ create_random_password:
     add rdx, 65
     sub rcx, 1
     mov byte [rcx], dl
-    lea rdi, [rel dot_msg]
-    call print
     cmp rcx, rsi
     jne loop
 

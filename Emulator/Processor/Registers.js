@@ -17,6 +17,8 @@ export class Registers {
             new Register("RFLAGS", "EFLAGS", "FLAGS", null, null)
         ];
 
+        this.regCache = {};
+
         this.subscribers = [];
     }
 
@@ -25,13 +27,15 @@ export class Registers {
     }
 
     notify(reg, value) {
-        this.subscribers.forEach((callback) => {
+        for(var i = 0; i < this.subscribers.length; i++) {
+            let callback = this.subscribers[i];
+
             try {
                 callback(reg, value);
             } catch (exception) {
                 console.log(exception);
             }
-        });
+        }
     }
 
     notifyAll() {
@@ -47,33 +51,51 @@ export class Registers {
     }
 
     reg(name) {
-        var retVal = undefined;
+        var reg = this.regCache[name.toUpperCase()];
 
-        this.registers.forEach((register) => {
-            let value = register.valueOf(name);
+        if (reg === undefined) {
+            for (var i = 0; i < this.registers.length; i++) {
+                if (this.registers[i].hasName(name)) {
+                    reg = this.registers[i];
+                    this.regCache[name.toUpperCase()] = this.registers[i];
 
-            if (value !== undefined) {
-                retVal = value;
+                    break;
+                }
             }
-        });
 
-        if (retVal === undefined) {
-            throw new CPUError("Tried to access nonexistent register: " + name);
+            if (reg === undefined) {
+                throw new CPUError("Tried to access nonexistent register: " + name);
+            }
         }
 
-        return retVal;
+        return reg.valueOf(name);
     }
 
     setReg(name, value) {
-        this.registers.forEach((register) => {
-            if (register.setReg(name, value) === true) {
-                this.notify(register.name64, value);
-                this.notify(register.name32, value);
-                this.notify(register.name16 ? register.name16 : "", value);
-                this.notify(register.name8hi ? register.name8hi : "", value);
-                this.notify(register.name8 ? register.name8 : "", value);
+        var reg = this.regCache[name.toUpperCase()];
+
+        if (reg === undefined) {
+            for (var i = 0; i < this.registers.length; i++) {
+                if (this.registers[i].hasName(name)) {
+                    reg = this.registers[i];
+                    this.regCache[name.toUpperCase()] = this.registers[i];
+
+                    break;
+                }
             }
-        });
+
+            if (reg === undefined) {
+                throw new CPUError("Tried to access nonexistent register: " + name);
+            }
+        }
+
+        if (reg.setReg(name, value) === true) {
+            this.notify(reg.name64, value);
+            this.notify(reg.name32, value);
+            this.notify(reg.name16 ? reg.name16 : "", value);
+            this.notify(reg.name8hi ? reg.name8hi : "", value);
+            this.notify(reg.name8 ? reg.name8 : "", value);
+        }
     }
 
     regByteLen(name) {

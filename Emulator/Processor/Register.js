@@ -9,6 +9,19 @@ export class Register {
         this.name8      = name8;
     }
 
+    hasName(name) {
+        switch(name.toUpperCase()) {
+            case this.name64:
+            case this.name32:
+            case this.name16:
+            case this.name8hi:
+            case this.name8:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     valueOf(name) {
         switch(name.toUpperCase()) {
             case this.name64: {

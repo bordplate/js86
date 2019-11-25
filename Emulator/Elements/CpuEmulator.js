@@ -122,11 +122,11 @@ export class CpuEmulator extends HTMLElement {
         });
 
         this.cpu.registers.subscribe((reg, value) => {
-            if (reg.toLowerCase() === "rip") {
+            if (reg === "RIP") {
                 this.assemblyView.setCurrentLine(value);
             }
 
-            if (reg.toLowerCase() === "rsp") {
+            if (reg === "RSP") {
                 let rsp = this.stackWatch === "dynamic" ? this.cpu.registers.reg("rsp") : parseInt(this.stackWatch);
 
                 let stack = this.cpu.memory.load(rsp, this.cpu.memory.memory.length - rsp);
