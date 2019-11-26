@@ -34,7 +34,7 @@ export class Console extends HTMLElement {
                 if (e.key === "Enter") {
                     let buffer = veryMuchThis.ioBuffer.buffer;
                     let input = veryMuchThis.textArea.value.substring(buffer.length) + "\n";
-                    veryMuchThis.ioBuffer.input(eval(`'${input.replace('\n', '\\x0a').replace("'", "\\'")}'`));
+                    veryMuchThis.ioBuffer.input(eval(`'${input.replace('\n', '\\x0a').replace("'", "\\'")}'`), input);
                 }
             };
 

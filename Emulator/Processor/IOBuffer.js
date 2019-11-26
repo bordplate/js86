@@ -60,8 +60,8 @@ export class IOBuffer {
         return input[input.length - 1];
     }
 
-    input(text) {
-        this.buffer += text;
+    input(text, escaped = undefined) {
+        this.buffer += escaped !== undefined ? escaped : text;
         this.inputBuffer += text;
         this.notify(SUB_TYPE.INPUT, text);
     }
