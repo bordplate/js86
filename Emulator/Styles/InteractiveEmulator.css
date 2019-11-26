@@ -150,7 +150,7 @@ cpu-assembly {
     flex-direction: column;
     order: 3;
     overflow-y: scroll;
-    height: 605px;
+    max-height: 605px;
 }
 
 cpu-assembly div:nth-child(2n) {
