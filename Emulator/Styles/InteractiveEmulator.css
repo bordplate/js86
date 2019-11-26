@@ -149,8 +149,8 @@ cpu-assembly {
     display: flex;
     flex-direction: column;
     order: 3;
-    /*overflow-y: scroll;
-    height: 293px;*/
+    overflow-y: scroll;
+    height: 605px;
 }
 
 cpu-assembly div:nth-child(2n) {
@@ -218,6 +218,7 @@ cpu-assembly div:nth-child(2n) {
 
 .code-label {
     display: flex;
+    min-height: min-content;
 }
 
 .label-name {

@@ -19,16 +19,24 @@ export class CpuAssembly extends HTMLElement {
         let hexedValue = `0x${lineNum.toString(16).toUpperCase()}`;
         var allLines = this.getElementsByClassName('code-line');
 
-        Array.prototype.forEach.call(allLines, function (element) {
+        for (var i = 0; i < allLines.length; i++) {
+            let element = allLines[i];
+
             if (element.classList.contains("breakpoint")) {
                 element.className = "code-line breakpoint";
             } else {
                 element.className = "code-line";
             }
-        });
+        }
 
         try {
-            document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`).classList.add("current-line");
+            let element = document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`);
+            element.classList.add("current-line");
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest"
+            });
+
         } catch (exception) {
             // Ignore the shit out of that
         }
