@@ -604,8 +604,13 @@ class NativeFunction {
             input = input.substr(0, maxSize);
         }
 
-        let encoder = new TextEncoder('utf-8');
-        this.cpu.memory.store(memoryPointer, encoder.encode(input));
+        let buffer = [];
+
+        for (var i = 0; i < input.length; i++) {
+            buffer.push(input.charCodeAt(i));
+        }
+
+        this.cpu.memory.store(memoryPointer, buffer);
     }
 
     /**
