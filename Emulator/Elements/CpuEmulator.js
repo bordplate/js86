@@ -207,6 +207,10 @@ export class CpuEmulator extends HTMLElement {
     }
 
     resetCPU() {
+        for (let i in this.cpu.onEndCallbacks) {
+            this.cpu.onEndCallbacks[i]();
+        }
+
         this.runButton.className = "";
         this.runButton.innerText = "Run";
         this.isRunning = false;
