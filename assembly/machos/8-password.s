@@ -7,7 +7,7 @@ password_ptr: db "What in the fuck?",0
 booting_msg: db "Booting system...",0x0a,0
 welcome_msg: db "Welcome to SECSYS3000!",0
 enter_pass_msg: db 0x0a,"Please enter your password: ",0
-loggedin_msg: db "Successfully logged in!",0x0a,0
+_loggedin_msg: db "Successfully logged in!",0x0a,"Flag: {vetle_iz_da_bezt}",0x0a,0
 wrong_pass_msg: db "Wrong password!",0x0a,0
 
 section .text
@@ -19,13 +19,14 @@ main:
     call exit
 
 say_success:
-    lea rdi, [rel loggedin_msg]
+    lea rdi, [rel _loggedin_msg]
     call print
     call exit
 
 say_wrong:
     lea rdi, [rel wrong_pass_msg]
     call print
+    ret
 
 enter_password:
     lea rdi, [rel enter_pass_msg]
@@ -39,9 +40,6 @@ enter_password:
     mov rdx, 0x10
     call strncmp
     add rsp, 0x10
-    cmp rax, 0
-    je say_success
-    jmp say_wrong
     ret
 
 boot_up:
@@ -50,7 +48,12 @@ boot_up:
     call integrity_check
     lea rdi, [rel welcome_msg]
     call print
+    password_loop:
     call enter_password
+    cmp rax, 0
+    je say_success
+    call say_wrong
+    jmp password_loop
     ret
 
 integrity_check:
@@ -62,7 +65,6 @@ integrity_check:
     call create_random_password
     lea rax, [rel password_ptr]
     mov [rax], rdi
-    call print
     pop rdi
     ret
 
@@ -88,7 +90,6 @@ create_random_password:
     ret
 
 read:
-
     int 2
     ret
 

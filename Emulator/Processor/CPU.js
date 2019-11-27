@@ -157,13 +157,13 @@ export class CPU {
             return;
         }
 
-        var address = this.loader.symbols[name];
+        let address = this.loader.symbols[name];
 
         if (address === undefined) {
             // Attempt to fall back to different symbol list
-            var symbol = undefined;
+            let symbol = undefined;
 
-            for (var i = 0; i < this.loader.symbolList.length; i++) {
+            for (let i = 0; i < this.loader.symbolList.length; i++) {
                 if (this.loader.symbolList[i].name === name) {
                     symbol = this.loader.symbolList[i];
 
@@ -246,14 +246,14 @@ class InstructionHandler {
      * @returns {{size: number, value: (number)}} <-- That
      */
     parseValue(val) {
-        var value = 0x0;
-        var valueSize = 0x0;
-        var address = null;
-        var name = null;
+        let value = 0x0;
+        let valueSize = 0x0;
+        let address = null;
+        let name = null;
 
         if (isNaN(val)) {
             if (val.includes("ptr")) {
-                var size = 0x8;
+                let size = 0x8;
 
                 let components = val.split(" ");
 
@@ -273,10 +273,10 @@ class InstructionHandler {
                 // Resolve address and arithmetics.
                 let addressComponents = val.split("[")[1].split("]")[0].split(" ");
                 address = 0;
-                var operation = "+";
+                let operation = "+";
 
                 addressComponents.forEach((component) => {
-                    var realValue = 0;
+                    let realValue = 0;
 
                     if (component === "+" || component === "-" || component === "*" || component === "/") {
                         operation = component;
@@ -591,7 +591,7 @@ class NativeFunction {
             this.cpu.ioWait = true;
 
             // Move instruction pointer back again and refuse to continue.
-            var instructionPointer = this.cpu.registers.reg("RIP");
+            let instructionPointer = this.cpu.registers.reg("RIP");
             instructionPointer -= this.ih.inst_size;
             this.cpu.registers.setReg("rip", instructionPointer);
 
@@ -606,7 +606,7 @@ class NativeFunction {
 
         let buffer = [];
 
-        for (var i = 0; i < input.length; i++) {
+        for (let i = 0; i < input.length; i++) {
             buffer.push(input.charCodeAt(i));
         }
 

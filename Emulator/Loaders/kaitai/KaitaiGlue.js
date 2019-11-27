@@ -8,7 +8,7 @@ export class KaitaiGlue {
             return;
         }
 
-        var script = document.createElement("script");
+        let script = document.createElement("script");
 
         script.src = import.meta.url.substr(0, import.meta.url.lastIndexOf("/")) + "/KaitaiStream.js";
         script.async = "true";
@@ -24,7 +24,7 @@ export class KaitaiGlue {
             return;
         }
 
-        var script = document.createElement("script");
+        let script = document.createElement("script");
 
         script.src = import.meta.url.substr(0, import.meta.url.lastIndexOf("/")) + `/${name}.js`;
         script.async = "true";

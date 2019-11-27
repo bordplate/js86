@@ -50,7 +50,7 @@ export class Metadata {
 
             element.childNodes.forEach((node) => {
                 if (!node.hasChildNodes()) {
-                    var newElement = document.createElement("span");
+                    let newElement = document.createElement("span");
                     newElement.innerHTML = func(node.textContent);
 
                     let nextSibling = node.nextSibling;
@@ -74,7 +74,7 @@ export class Metadata {
             return false;
         }
 
-        for (var i = 0; i <= this.loader.symbolList.length; i++) {
+        for (let i = 0; i <= this.loader.symbolList.length; i++) {
             let symbol = this.loader.symbolList[i];
 
             if (symbol === undefined) {
@@ -122,7 +122,7 @@ export class Metadata {
                 Metadata.registerNames().forEach((registerName) => {
                     let occurences = op_str.split(registerName.toLowerCase()).length - 1;
 
-                    for (var i = 0; i <= occurences; i++) {
+                    for (let i = 0; i <= occurences; i++) {
                         op_str = op_str.replace(
                             registerName.toLowerCase(),
                             registerName.toUpperCase()
@@ -133,7 +133,7 @@ export class Metadata {
                 Metadata.registerNames().forEach((registerName) => {
                     let occurences = op_str.split(registerName).length - 1;
 
-                    for (var i = 0; i <= occurences; i++) {
+                    for (let i = 0; i <= occurences; i++) {
                         op_str = op_str.replace(
                             registerName.toUpperCase(),
                             `<span class="op_str-register">${registerName.toLowerCase()}</span>`
@@ -214,7 +214,7 @@ export class Metadata {
                 let components = op_str.split("[");
                 if (components.length > 1) {
                     let addressStr = components.slice(-1)[0].split("]")[0];
-                    var addr = 0;
+                    let addr = 0;
 
                     // We'll just cheat with the RIP relative addressing
                     if (addressStr.startsWith("rip + ")) {

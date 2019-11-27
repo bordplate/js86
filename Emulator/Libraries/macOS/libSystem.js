@@ -137,7 +137,7 @@ export class libSystem extends Library {
         let requestSize = this.cpu.registers.reg("rdi");
         let size = (requestSize - (requestSize % 8) + 8);  // Allocated sizes are always word aligned
 
-        var pointer = 0;  // Pointer we will return to user
+        let pointer = 0;  // Pointer we will return to user
 
         let firstChunk = (new MallocChunk()).read(this.cpu.memory.load(this.heapStart - 0x8, 32), 0);
 

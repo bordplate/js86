@@ -75,7 +75,7 @@ export class CpuEmulator extends HTMLElement {
 
         // Load CPU
         CpuEmulator.loadBinary(this.binaryPath, async (binary) => {
-            var hexDump = "";
+            let hexDump = "";
             binary.forEach((byte) => {
                 hexDump += byte.toString(16).padStart(2, "0") + " ";
             });
@@ -85,7 +85,7 @@ export class CpuEmulator extends HTMLElement {
             // Support for custom loaders (ELFs, PEs, MachOs, etc)
             let loaderName = this.loaderName + "Loader";
 
-            var loaderModule = await import(`../Loaders/${loaderName}.js`);
+            let loaderModule = await import(`../Loaders/${loaderName}.js`);
 
             this.loader = new loaderModule[loaderName](this.memorySize);
             await this.loader.loadBinary(binary);
@@ -168,7 +168,7 @@ export class CpuEmulator extends HTMLElement {
         if(!this.isRunning) {
             this.runButton.className += "active-running";
             this.runButton.innerText = "Stop";
-            var veryMuchThis = this;
+            let veryMuchThis = this;
             this.isRunning = true;
             this.runInterval = setInterval(() => {
                 veryMuchThis.stepCPU();
@@ -176,7 +176,7 @@ export class CpuEmulator extends HTMLElement {
                 // Process 50 instructions at the time if we have no speed limit
                 // We can't just run a while true-loop because it blocks the UI.
                 if (veryMuchThis.runSpeed <= 0) {
-                    for(var i = 0; i<50;i++) {
+                    for(let i = 0; i<50;i++) {
                         veryMuchThis.stepCPU();
                     }
                 }
@@ -212,7 +212,7 @@ export class CpuEmulator extends HTMLElement {
         this.consoleView.clear();
 
         CpuEmulator.loadBinary(this.binaryPath, async (binary) => {
-            var hexDump = "";
+            let hexDump = "";
             binary.forEach((byte) => {
                 hexDump += byte.toString(16).padStart(2, "0") + " ";
             });
@@ -222,7 +222,7 @@ export class CpuEmulator extends HTMLElement {
             // Support for custom loaders (ELFs, PEs, MachOs, etc)
             let loaderName = this.loaderName + "Loader";
 
-            var loaderModule = await import(`../Loaders/${loaderName}.js`);
+            let loaderModule = await import(`../Loaders/${loaderName}.js`);
 
             this.loader = new loaderModule[loaderName](this.memorySize);
             await this.loader.loadBinary(binary);

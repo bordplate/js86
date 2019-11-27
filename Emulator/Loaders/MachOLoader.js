@@ -108,7 +108,7 @@ export class MachOLoader extends Loader {
      * @returns {null|*}
      */
     libraryAlreadyLoaded(name, hash) {
-        for(var i = 0; i < this.libraries.length; i++) {
+        for(let i = 0; i < this.libraries.length; i++) {
             let library = this.libraries[i];
 
             if (library === {}) {
@@ -279,15 +279,15 @@ export class MachOLoader extends Loader {
      */
     resolveSymbols() {
         if (this.dyld_info !== false) {
-            var dylibNum = 0;
-            var symbol = "";
-            var trailingFlags = 0;
-            var type = 0;
-            var segment = 0;
-            var offset = 0;
+            let dylibNum = 0;
+            let symbol = "";
+            let trailingFlags = 0;
+            let type = 0;
+            let segment = 0;
+            let offset = 0;
 
             let bindFunc = (item) => {
-                var scale = 1;
+                let scale = 1;
 
                 switch(item.opcode) {
                     case MachO.DyldInfoCommand.BindOpcode.SET_DYLIB_ORDINAL_IMMEDIATE:
@@ -396,7 +396,7 @@ export class MachOLoader extends Loader {
      *
      */
     generateSymbolList() {
-        for (var i = 0; i < this.libraries.length; i++) {
+        for (let i = 0; i < this.libraries.length; i++) {
             let loader = this.libraries[i].loader;
 
             loader.generateSymbolList();
@@ -410,8 +410,8 @@ export class MachOLoader extends Loader {
             }
 
             let sym = this.machoSymbols[key];
-            var type = "text"; // Just default to text cuz idc
-            var address = 0;
+            let type = "text"; // Just default to text cuz idc
+            let address = 0;
 
             if (this.sections[sym.sect-1] !== undefined) {
                 type = this.sections[sym.sect-1].segName.replace("__", "").toLowerCase();  // Super cheaty way of setting symbol type
@@ -467,13 +467,13 @@ export class MachOLoader extends Loader {
 }
 
 // Used for checking if a library is already loaded
-var hashCode = (array) => {
-    var hash = 0;
+let hashCode = (array) => {
+    let hash = 0;
     if (array.length === 0) {
         return hash;
     }
-    for (var i = 0; i < array.length; i++) {
-        var char = array[i];
+    for (let i = 0; i < array.length; i++) {
+        let char = array[i];
         hash = ((hash<<5)-hash)+char;
         hash = hash & hash; // Convert to 32bit integer
     }

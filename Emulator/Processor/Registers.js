@@ -27,7 +27,7 @@ export class Registers {
     }
 
     notify(reg, value) {
-        for(var i = 0; i < this.subscribers.length; i++) {
+        for(let i = 0; i < this.subscribers.length; i++) {
             let callback = this.subscribers[i];
 
             try {
@@ -51,10 +51,10 @@ export class Registers {
     }
 
     reg(name) {
-        var reg = this.regCache[name.toUpperCase()];
+        let reg = this.regCache[name.toUpperCase()];
 
         if (reg === undefined) {
-            for (var i = 0; i < this.registers.length; i++) {
+            for (let i = 0; i < this.registers.length; i++) {
                 if (this.registers[i].hasName(name)) {
                     reg = this.registers[i];
                     this.regCache[name.toUpperCase()] = this.registers[i];
@@ -72,10 +72,10 @@ export class Registers {
     }
 
     setReg(name, value) {
-        var reg = this.regCache[name.toUpperCase()];
+        let reg = this.regCache[name.toUpperCase()];
 
         if (reg === undefined) {
-            for (var i = 0; i < this.registers.length; i++) {
+            for (let i = 0; i < this.registers.length; i++) {
                 if (this.registers[i].hasName(name)) {
                     reg = this.registers[i];
                     this.regCache[name.toUpperCase()] = this.registers[i];
@@ -99,7 +99,7 @@ export class Registers {
     }
 
     regByteLen(name) {
-        var retVal = undefined;
+        let retVal = undefined;
 
         this.registers.forEach((register) => {
             let value = register.byteLengthOf(name);

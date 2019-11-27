@@ -17,9 +17,9 @@ export class CpuAssembly extends HTMLElement {
         }
 
         let hexedValue = `0x${lineNum.toString(16).toUpperCase()}`;
-        var allLines = this.getElementsByClassName('code-line');
+        let allLines = this.getElementsByClassName('code-line');
 
-        for (var i = 0; i < allLines.length; i++) {
+        for (let i = 0; i < allLines.length; i++) {
             let element = allLines[i];
 
             if (element.classList.contains("breakpoint")) {
@@ -49,9 +49,9 @@ export class CpuAssembly extends HTMLElement {
      * @returns {boolean}
      */
     isAddressInView(address) {
-        var isInView = false;
+        let isInView = false;
 
-        for (var i = 0; i < this.assembly.length; i++) {
+        for (let i = 0; i < this.assembly.length; i++) {
             let instruction = this.assembly[i];
 
             let instructionAddress = parseInt(instruction[0], 16);
@@ -75,15 +75,15 @@ export class CpuAssembly extends HTMLElement {
             this.codeSize = metadata.codeSize + parseInt(assembly[0][0], 16);
         }
 
-        var processedFirstLine = false;  // If we're processing the first line of the code, the label shouldn't be large
+        let processedFirstLine = false;  // If we're processing the first line of the code, the label shouldn't be large
         this.innerHTML = assembly.flatMap((instruction) => {
             if (parseInt(instruction[0], 16) > this.codeSize) {
                 return;
             }
 
-            var op_str = instruction[2];
+            let op_str = instruction[2];
 
-            var html = "";
+            let html = "";
 
             let addressMetadata = metadata.informationForAddress(instruction[0]);
 

@@ -12,9 +12,9 @@ export class CpuMemory extends HTMLElement {
 
         this.innerHTML = "";
 
-        var html = "";
+        let html = "";
 
-        for (var i = 0; i < memory.length; i++) {
+        for (let i = 0; i < memory.length; i++) {
             let byte = memory[i];
             let address = this.memorySize - memory.length + i;
             html += `

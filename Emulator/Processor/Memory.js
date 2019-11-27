@@ -64,7 +64,7 @@ export class Memory {
     }
 
     loadUInt(offset, size) {
-        var uintarray = this.load(offset, size);
+        let uintarray = this.load(offset, size);
 
         /*var uint = BigInt(0x00);
         var i = 1;
@@ -73,7 +73,7 @@ export class Memory {
             i += 1;
         });*/
 
-        var uint = new Int64(uintarray);
+        let uint = new Int64(uintarray);
 
         return uint;
     }
@@ -83,7 +83,7 @@ export class Memory {
 
         let subarray = this.memory.subarray(offset);
 
-        var stop = false;
+        let stop = false;
         subarray.forEach((value) => {
             if (stop) {
                 return;
@@ -102,7 +102,7 @@ export class Memory {
     loadString(offset, stringTerminator) {
         let messageArray = this.loadUntil(offset, stringTerminator);
 
-        var message = "";
+        let message = "";
         messageArray.forEach((byte) => {
             message += String.fromCharCode(byte);
         });
