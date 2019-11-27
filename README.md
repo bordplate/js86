@@ -5,6 +5,8 @@ be easily used to make tutorials or demos. Uses interrupts to tie into JavaScrip
 It is important to note that this emulator only implements a very limited subset of instructions and does not even 
 support conditional branching of any kind just yet. 
 
+![Emulator Preview](https://bordplate.no/learn-bof/emulator.png)
+
 ## Binary formats and compilation
 The emulator has simple support for [Mach-O binaries](https://en.wikipedia.org/wiki/Mach-O) (but not FAT archives) and raw binary files.
 
