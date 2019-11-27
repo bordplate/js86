@@ -14,10 +14,11 @@ export class CpuRegisters extends HTMLElement {
     }
 
     updateRegister(name, value) {
-        this.registerViews.forEach((registerView) => {
+        for (let i = 0; i < this.registerViews.length; i++) {
+            let registerView = this.registerViews[i];
             if (registerView.name === name.toUpperCase()) {
                 registerView.updateValue(value);
             }
-        });
+        }
     }
 }

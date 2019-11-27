@@ -32,10 +32,10 @@ export class CpuAssembly extends HTMLElement {
         try {
             let element = document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`);
             element.classList.add("current-line");
-            element.scrollIntoView({
+            /*element.scrollIntoView({
                 behavior: "smooth",
                 block: "nearest"
-            });
+            });*/
 
         } catch (exception) {
             // Ignore the shit out of that
@@ -116,10 +116,13 @@ export class CpuAssembly extends HTMLElement {
             return html;
         }).join('\n');
 
-        Array.from(document.getElementsByClassName("code-line")).forEach((element) => {
+        let codeLines = document.getElementsByClassName("code-line");
+
+        for (let i = 0; i < codeLines.length; i++) {
+            let element = codeLines[i];
             let addressElement = element.getElementsByClassName("address").item(0);
             {const veryMuchThis = this; addressElement.onclick = () => {veryMuchThis.addBreakpoint(element.getAttribute("data-instruction"))};}
-        });
+        }
     }
 
     addBreakpoint(instruction) {

@@ -39,15 +39,19 @@ export class Registers {
     }
 
     notifyAll() {
-        this.subscribers.forEach((callback) => {
-            this.registers.forEach((register) => {
+        for (let i in this.subscribers) {
+            let callback = this.subscribers[i];
+
+            for (let j in this.registers) {
+                let register = this.registers[j];
+
                 try {
                     callback(register.name64, register.value);
                 } catch (exception) {
                     console.log(exception);
                 }
-            });
-        });
+            }
+        }
     }
 
     reg(name) {
@@ -101,13 +105,14 @@ export class Registers {
     regByteLen(name) {
         let retVal = undefined;
 
-        this.registers.forEach((register) => {
+        for (let i in this.registers) {
+            let register = this.registers[i];
             let value = register.byteLengthOf(name);
 
             if (value !== undefined) {
                 retVal = value;
             }
-        });
+        }
 
         if (retVal === undefined) {
             throw CPUError("Tried to access nonexistent register: " + name);

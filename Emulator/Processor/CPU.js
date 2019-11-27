@@ -68,10 +68,10 @@ export class CPU {
 
         let disassembled = [];
 
-        // TODO: Could like flatMap or whatever? I use maps way too little :(
-        instructions.forEach((instruction) => {
+        for (let i = 0; i < instructions.length; i++) {
+            let instruction = instructions[i];
             disassembled.push([instruction.address.toString(16), instruction.mnemonic, instruction.op_str]);
-        });
+        }
 
         return disassembled;
     }
@@ -87,9 +87,10 @@ export class CPU {
         let disassembled = [];
 
         // TODO: Could like flatMap or whatever? I use maps way too little :(
-        instructions.forEach((instruction) => {
+        for (let i = 0; i < instructions.length; i++) {
+            let instruction = instructions[i];
             disassembled.push([instruction.address.toString(16), instruction.mnemonic, instruction.op_str, instruction.size]);
-        });
+        }
 
         return disassembled;
     }
@@ -218,9 +219,10 @@ export class CPU {
      * @param reason
      */
     ended(reason) {
-        this.onEndCallbacks.forEach((callback) => {
+        for (let i = 0; i < this.onEndCallbacks.length; i++) {
+            let callback = this.onEndCallbacks[i];
             callback(reason);
-        });
+        }
     }
 }
 
@@ -275,7 +277,8 @@ class InstructionHandler {
                 address = 0;
                 let operation = "+";
 
-                addressComponents.forEach((component) => {
+                for (let i = 0; i < addressComponents.length; i++) {
+                    let component = addressComponents[i];
                     let realValue = 0;
 
                     if (component === "+" || component === "-" || component === "*" || component === "/") {
@@ -293,7 +296,7 @@ class InstructionHandler {
                         case "*": address *= realValue; break;
                         case "/": address /= realValue; break;
                     }
-                });
+                }
 
                 value = this.cpu.memory.loadUInt(address, size);
                 valueSize = size;

@@ -33,14 +33,16 @@ export class IOBuffer {
     notify(type, newBuffer) {
         switch (type) {
             case SUB_TYPE.INPUT:
-                this.inputSubscribers.forEach((callback) => {
+                for (let i = 0; i < this.inputSubscribers.length; i++) {
+                    let callback = this.inputSubscribers[i];
                     callback(newBuffer)
-                });
+                }
                 break;
             case SUB_TYPE.OUTPUT:
-                this.outputSubscribers.forEach((callback) => {
+                for (let i = 0; i < this.outputSubscribers.length; i++) {
+                    let callback = this.outputSubscribers[i];
                     callback(newBuffer)
-                });
+                }
                 break;
         }
     }

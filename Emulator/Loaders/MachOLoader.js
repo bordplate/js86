@@ -158,7 +158,8 @@ export class MachOLoader extends Loader {
         // Process load commands.
         // I don't think load commands should need to be in a particular order,
         //  but segments will definitely be way off if they're in a weird order in the binary.
-        await this.macho.loadCommands.forEach((loadCommand) => {
+        for (let i = 0; i < this.macho.loadCommands.length; i++) {
+            let loadCommand = this.macho.loadCommands[i];
             // Parse segments to figure out how much RAM we need and stuff
             if (loadCommand.type === MachO.LoadCommandType.SEGMENT_64 || loadCommand.type === MachO.LoadCommandType.SEGMENT) {
                 this.minimumRam += loadCommand.body.filesize;
@@ -173,7 +174,8 @@ export class MachOLoader extends Loader {
                     this.vmOffset = loadCommand.body.vmsize;
                 }
 
-                loadCommand.body.sections.forEach((section) => {
+                for (let i = 0; i < loadCommand.body.sections.length; i++) {
+                    let section = loadCommand.body.sections[i];
                     this.sections.push(section);
 
                     if (section.sectName === "__text") {
@@ -184,7 +186,7 @@ export class MachOLoader extends Loader {
                     if (section.sectName === "__stubs") {
                         this.visualCodeSize += section.size;
                     }
-                });
+                }
 
                 // TODO: Load memory protections in segments (rwx, etc) when CPU supports that.
             }
@@ -204,13 +206,14 @@ export class MachOLoader extends Loader {
                     return name !== " ";  // Very annoying. I believe this is a bug in the MachO-parser, but who knows
                 });
 
-                sanitizedSymbolNames.forEach((name, i) => {
+                for (let i = 0; i < sanitizedSymbolNames.length; i++) {
+                    let name = sanitizedSymbolNames[i];
                     if (sortedSymbols[i] === undefined) {
-                        return;
+                        break;
                     }
 
                     this.machoSymbols[name] = sortedSymbols[i];
-                });
+                }
             }
 
             // Load external libraries (dylibs)
@@ -224,7 +227,7 @@ export class MachOLoader extends Loader {
 
                     this.libraries.push(loadedLib);
 
-                    return;
+                    break;
                 }
 
                 this.loadingLibraries += 1;
@@ -252,7 +255,7 @@ export class MachOLoader extends Loader {
             if (loadCommand.type === MachO.LoadCommandType.DYLD_INFO_ONLY) {
                 this.dyld_info = loadCommand.body;
             }
-        });
+        }
 
         // Library binaries are loaded async, so we need to make sure
         //  they're loaded before progress.
@@ -263,9 +266,10 @@ export class MachOLoader extends Loader {
         if (this === this.masterLoader) {
             this.resolveSymbols();
 
-            await this.libraries.forEach((library) => {
+            for (let i = 0; i < this.libraries.length; i++) {
+                let library = this.libraries[i];
                 library.loader.resolveSymbols();
-            });
+            }
         }
 
         return this.binary;

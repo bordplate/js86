@@ -25,9 +25,9 @@ export class Memory {
     }
 
     notify() {
-        this.subscribers.forEach((subscriber) => {
-            subscriber();
-        });
+        for (let i in this.subscribers) {
+            this.subscribers[i]();
+        }
     }
 
     store(offset, data, size = 8) {
@@ -84,9 +84,10 @@ export class Memory {
         let subarray = this.memory.subarray(offset);
 
         let stop = false;
-        subarray.forEach((value) => {
+        for (let i in subarray) {
+            let value = subarray[i];
             if (stop) {
-                return;
+                break;
             }
 
             if (value == character) {
@@ -94,7 +95,7 @@ export class Memory {
             } else {
                 retVal.push(value);
             }
-        });
+        }
 
         return retVal;
     }
@@ -103,9 +104,10 @@ export class Memory {
         let messageArray = this.loadUntil(offset, stringTerminator);
 
         let message = "";
-        messageArray.forEach((byte) => {
+        for (let i in messageArray) {
+            let byte = messageArray[i];
             message += String.fromCharCode(byte);
-        });
+        }
 
         return message;
     }

@@ -67,18 +67,20 @@ export class CpuEmulator extends HTMLElement {
 
         this.consoleView.load(); // Nodes can't have children before they're added to DOM for some reason.
 
-        this.watchedRegisters.forEach((register) => {
+        for (let i = 0; i < this.watchedRegisters.length; i++) {
+            let register = this.watchedRegisters[i];
             this.registersView.addRegisterView(register);
-        });
+        }
 
         this.memoryView.memorySize = this.memorySize;
 
         // Load CPU
         CpuEmulator.loadBinary(this.binaryPath, async (binary) => {
             let hexDump = "";
-            binary.forEach((byte) => {
+            for (let i = 0; i < binary.length; i++) {
+                let byte = binary[i];
                 hexDump += byte.toString(16).padStart(2, "0") + " ";
-            });
+            }
 
             console.log("Loading CPU.");
 
@@ -213,9 +215,10 @@ export class CpuEmulator extends HTMLElement {
 
         CpuEmulator.loadBinary(this.binaryPath, async (binary) => {
             let hexDump = "";
-            binary.forEach((byte) => {
+            for (let i = 0; i < binary.length; i++) {
+                let byte = binary[i];
                 hexDump += byte.toString(16).padStart(2, "0") + " ";
-            });
+            }
 
             console.log("Loading CPU.");
 

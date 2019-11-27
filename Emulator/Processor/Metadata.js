@@ -98,7 +98,9 @@ export class Metadata {
             this.codeSize = this.loader.visualCodeSize;
         }
 
-        this.assembly.forEach((instruction) => {
+        for (let i in this.assembly) {
+            let instruction = this.assembly[i];
+
             let [address, mnemonic, op_str, size] = instruction;
             address = parseInt(address, 16);
 
@@ -119,7 +121,9 @@ export class Metadata {
             // Push processing function that processes and styles all registers
             // When this is the first function in the opStrFunctions array, it will fire last
             addressInformation.opStrFunctions.push((op_str) => {
-                Metadata.registerNames().forEach((registerName) => {
+                let registerNames = Metadata.registerNames();
+                for (let i in registerNames) {
+                    let registerName = registerNames[i];
                     let occurences = op_str.split(registerName.toLowerCase()).length - 1;
 
                     for (let i = 0; i <= occurences; i++) {
@@ -128,9 +132,10 @@ export class Metadata {
                             registerName.toUpperCase()
                         )
                     }
-                });
+                }
 
-                Metadata.registerNames().forEach((registerName) => {
+                for (let i in registerNames) {
+                    let registerName = registerNames[i];
                     let occurences = op_str.split(registerName).length - 1;
 
                     for (let i = 0; i <= occurences; i++) {
@@ -139,7 +144,7 @@ export class Metadata {
                             `<span class="op_str-register">${registerName.toLowerCase()}</span>`
                         )
                     }
-                });
+                }
 
                 return op_str;
             });
@@ -198,13 +203,14 @@ export class Metadata {
             addressInformation.opStrFunctions.push((op_str) => {
                 let components = op_str.split(" ");
 
-                components.forEach((component) => {
+                for (let i in components) {
+                    let component = components[i];
                     if (parseInt(component)) {
                         // Hack for int values where int is surrounded by [ and ] (for memload operations)
                         let comp = component.replace("[", "").replace("]","");
                         op_str = op_str.replace(comp, `<span class="op_str-number">${comp}</span>`);
                     }
-                });
+                }
 
                 return op_str;
             });
@@ -238,7 +244,7 @@ export class Metadata {
             });
 
             this.addressInformation[address.toString(16)] = addressInformation;
-        });
+        }
 
         return true;
     }
