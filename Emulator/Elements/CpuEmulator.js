@@ -6,6 +6,7 @@ export class CpuEmulator extends HTMLElement {
         super();
 
         this.isRunning = false;
+        this.ranFirstLine = false;
 
         this.innerHTML = "";
 
@@ -67,27 +68,25 @@ export class CpuEmulator extends HTMLElement {
 
         this.consoleView.load(); // Nodes can't have children before they're added to DOM for some reason.
 
-        for (let i = 0; i < this.watchedRegisters.length; i++) {
-            let register = this.watchedRegisters[i];
+        this.watchedRegisters.forEach((register) => {
             this.registersView.addRegisterView(register);
-        }
+        });
 
         this.memoryView.memorySize = this.memorySize;
 
         // Load CPU
         CpuEmulator.loadBinary(this.binaryPath, async (binary) => {
-            let hexDump = "";
-            for (let i = 0; i < binary.length; i++) {
-                let byte = binary[i];
+            var hexDump = "";
+            binary.forEach((byte) => {
                 hexDump += byte.toString(16).padStart(2, "0") + " ";
-            }
+            });
 
             console.log("Loading CPU.");
 
             // Support for custom loaders (ELFs, PEs, MachOs, etc)
             let loaderName = this.loaderName + "Loader";
 
-            let loaderModule = await import(`../Loaders/${loaderName}.js`);
+            var loaderModule = await import(`../Loaders/${loaderName}.js`);
 
             this.loader = new loaderModule[loaderName](this.memorySize);
             await this.loader.loadBinary(binary);
@@ -125,7 +124,7 @@ export class CpuEmulator extends HTMLElement {
 
         this.cpu.registers.subscribe((reg, value) => {
             if (reg === "RIP") {
-                this.assemblyView.setCurrentLine(value);
+                this.assemblyView.setCurrentLine(value, this.ranFirstLine);
             }
 
             if (reg === "RSP") {
@@ -157,7 +156,7 @@ export class CpuEmulator extends HTMLElement {
         let stack = this.cpu.memory.load(rsp, this.cpu.memory.memory.length - rsp);
         this.memoryView.setMemory(stack);
 
-        this.assemblyView.setCurrentLine(this.cpu.registers.reg('rip'));
+        this.assemblyView.setCurrentLine(this.cpu.registers.reg('rip'), false);
 
         this.cpu.registers.notifyAll();
     }
@@ -170,7 +169,7 @@ export class CpuEmulator extends HTMLElement {
         if(!this.isRunning) {
             this.runButton.className += "active-running";
             this.runButton.innerText = "Stop";
-            let veryMuchThis = this;
+            var veryMuchThis = this;
             this.isRunning = true;
             this.runInterval = setInterval(() => {
                 veryMuchThis.stepCPU();
@@ -178,7 +177,7 @@ export class CpuEmulator extends HTMLElement {
                 // Process 50 instructions at the time if we have no speed limit
                 // We can't just run a while true-loop because it blocks the UI.
                 if (veryMuchThis.runSpeed <= 0) {
-                    for(let i = 0; i<50;i++) {
+                    for(var i = 0; i<50;i++) {
                         veryMuchThis.stepCPU();
                     }
                 }
@@ -199,6 +198,8 @@ export class CpuEmulator extends HTMLElement {
      *  into the assembly view, or the emulator stops.
      */
     stepCPU() {
+        this.ranFirstLine = true;
+
         let instructionPointer = this.cpu.nextInstruction();
 
         if (!this.assemblyView.isAddressInView(instructionPointer) && !this.cpu.done && !this.cpu.ioWait) {
@@ -207,10 +208,6 @@ export class CpuEmulator extends HTMLElement {
     }
 
     resetCPU() {
-        for (let i in this.cpu.onEndCallbacks) {
-            this.cpu.onEndCallbacks[i]();
-        }
-
         this.runButton.className = "";
         this.runButton.innerText = "Run";
         this.isRunning = false;
@@ -218,18 +215,17 @@ export class CpuEmulator extends HTMLElement {
         this.consoleView.clear();
 
         CpuEmulator.loadBinary(this.binaryPath, async (binary) => {
-            let hexDump = "";
-            for (let i = 0; i < binary.length; i++) {
-                let byte = binary[i];
+            var hexDump = "";
+            binary.forEach((byte) => {
                 hexDump += byte.toString(16).padStart(2, "0") + " ";
-            }
+            });
 
             console.log("Loading CPU.");
 
             // Support for custom loaders (ELFs, PEs, MachOs, etc)
             let loaderName = this.loaderName + "Loader";
 
-            let loaderModule = await import(`../Loaders/${loaderName}.js`);
+            var loaderModule = await import(`../Loaders/${loaderName}.js`);
 
             this.loader = new loaderModule[loaderName](this.memorySize);
             await this.loader.loadBinary(binary);

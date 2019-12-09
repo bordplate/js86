@@ -11,15 +11,15 @@ export class CpuAssembly extends HTMLElement {
         this.uniqueName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 8);
     }
 
-    setCurrentLine(lineNum) {
+    setCurrentLine(lineNum, scrollToLine = true) {
         if (!this.isAddressInView(lineNum)) {
             return;  // Ignore
         }
 
         let hexedValue = `0x${lineNum.toString(16).toUpperCase()}`;
-        let allLines = this.getElementsByClassName('code-line');
+        var allLines = this.getElementsByClassName('code-line');
 
-        for (let i = 0; i < allLines.length; i++) {
+        for (var i = 0; i < allLines.length; i++) {
             let element = allLines[i];
 
             if (element.classList.contains("breakpoint")) {
@@ -32,14 +32,17 @@ export class CpuAssembly extends HTMLElement {
         try {
             let element = document.getElementById(`${this.uniqueName}-line-${hexedValue.toLowerCase()}`);
             element.classList.add("current-line");
-            /*element.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest"
-            });*/
 
+            if (scrollToLine) {
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest"
+                });
+            }
         } catch (exception) {
             // Ignore the shit out of that
         }
+
     }
 
     /**
@@ -49,9 +52,9 @@ export class CpuAssembly extends HTMLElement {
      * @returns {boolean}
      */
     isAddressInView(address) {
-        let isInView = false;
+        var isInView = false;
 
-        for (let i = 0; i < this.assembly.length; i++) {
+        for (var i = 0; i < this.assembly.length; i++) {
             let instruction = this.assembly[i];
 
             let instructionAddress = parseInt(instruction[0], 16);
@@ -75,15 +78,15 @@ export class CpuAssembly extends HTMLElement {
             this.codeSize = metadata.codeSize + parseInt(assembly[0][0], 16);
         }
 
-        let processedFirstLine = false;  // If we're processing the first line of the code, the label shouldn't be large
+        var processedFirstLine = false;  // If we're processing the first line of the code, the label shouldn't be large
         this.innerHTML = assembly.flatMap((instruction) => {
             if (parseInt(instruction[0], 16) > this.codeSize) {
                 return;
             }
 
-            let op_str = instruction[2];
+            var op_str = instruction[2];
 
-            let html = "";
+            var html = "";
 
             let addressMetadata = metadata.informationForAddress(instruction[0]);
 
@@ -116,13 +119,10 @@ export class CpuAssembly extends HTMLElement {
             return html;
         }).join('\n');
 
-        let codeLines = document.getElementsByClassName("code-line");
-
-        for (let i = 0; i < codeLines.length; i++) {
-            let element = codeLines[i];
+        Array.from(document.getElementsByClassName("code-line")).forEach((element) => {
             let addressElement = element.getElementsByClassName("address").item(0);
             {const veryMuchThis = this; addressElement.onclick = () => {veryMuchThis.addBreakpoint(element.getAttribute("data-instruction"))};}
-        }
+        });
     }
 
     addBreakpoint(instruction) {
