@@ -31,7 +31,7 @@ export class Memory {
     }
 
     store(offset, data, size = 8) {
-        if (!isNaN(data) && !((data instanceof Array) || (data instanceof Uint8Array))) {
+        if (typeof data === "number") {
             // Convert integer to Uint8Array, basically. 
             data = data
                 .toString(16)
