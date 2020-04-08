@@ -2,8 +2,7 @@
 Embeddable visual pseudo x86-64 emulator written in JavaScript. Made for easily embedding a CPU emulator into a web page so that it can
 be easily used to make tutorials or demos. Uses interrupts to tie into JavaScript code.   
 
-It is important to note that this emulator only implements a very limited subset of instructions and does not even 
-support conditional branching of any kind just yet. 
+It is important to note that this emulator only implements a very limited subset of instructions. 
 
 ![Emulator Preview](https://bordplate.no/learn-bof/emulator.png)
 
