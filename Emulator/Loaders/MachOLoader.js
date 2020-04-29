@@ -436,6 +436,8 @@ export class MachOLoader extends Loader {
                 } else if (n_type === 0x2) {
                     address = sym.value - this.pageZeroSize; // Because we ignore the whole page zero
                                                               //  at load time we need to subtract it from symbol address
+                } else {  // Fallback if all else fails. 
+                    address = sym.value - this.pageZeroSize;
                 }
             }
 
