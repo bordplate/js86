@@ -4,6 +4,10 @@ be easily used to make tutorials or demos. Uses interrupts to tie into JavaScrip
 
 It is important to note that this emulator only implements a very limited subset of instructions. 
 
+It was used to create these two interactive blog posts about binary exploitation:   
+[Interactive Guide to Buffer Overflow exploitation](https://bordplate.no/blog/en/post/interactive-buffer-overflow/)  
+[Interactive Beginner's Guide to ROP](https://bordplate.no/blog/en/post/interactive-rop-tutorial/)  
+  
 ![Emulator Preview](https://bordplate.no/learn-bof/emulator.png)
 
 ## Binary formats and compilation
